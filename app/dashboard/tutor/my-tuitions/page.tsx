@@ -71,9 +71,8 @@ function toEditForm(tuition: Tuition): EditForm {
 export default function MyTuitionsPage() {
   const { data: session } = useSession()
   const user = toDashboardUser(session?.user)
-  const tutorId = user?.id ? encodeURIComponent(user.id) : ""
   const tuitions = useDashboardCollection<Tuition>(
-    tutorId ? `/api/tuitions?tutorId=${tutorId}` : "",
+    "/api/tuitions?mine=true",
     normalizeOwnTuition
   )
   const [busyId, setBusyId] = useState<string | null>(null)

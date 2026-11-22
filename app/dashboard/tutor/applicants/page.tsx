@@ -35,13 +35,12 @@ import type { Application, Tuition } from "@/types"
 export default function TutorApplicantsPage() {
   const { data: session } = useSession()
   const user = toDashboardUser(session?.user)
-  const tutorId = user?.id ? encodeURIComponent(user.id) : ""
   const applications = useDashboardCollection<Application>(
-    tutorId ? `/api/applications?tutorId=${tutorId}` : "",
+    "/api/applications",
     normalizeApplication
   )
   const tuitions = useDashboardCollection<Tuition>(
-    tutorId ? `/api/tuitions?tutorId=${tutorId}` : "",
+    "/api/tuitions?mine=true",
     normalizeOwnTuition
   )
   const [busyId, setBusyId] = useState<string | null>(null)

@@ -87,9 +87,8 @@ function PostTuitionForm({
   const [uploading, setUploading] = useState(false)
   const [submitting, setSubmitting] = useState(false)
 
-  const tutorId = encodeURIComponent(user.id)
   const tuitions = useDashboardCollection<Tuition>(
-    `/api/tuitions?tutorId=${tutorId}`,
+    "/api/tuitions?mine=true",
     normalizeOwnTuition
   )
   const isPro = user.plan !== "free"
