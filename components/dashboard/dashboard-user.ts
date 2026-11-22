@@ -1,6 +1,7 @@
 import { getRoleLabel } from "@/components/navbar/session-utils"
 
 export type DashboardUser = {
+  id: string
   name: string
   email: string
   image: string | null
@@ -36,6 +37,7 @@ export function toDashboardUser(value: unknown): DashboardUser | null {
   const plan = asString(raw.plan) || "free"
 
   return {
+    id: asString(raw.id) || asString(raw._id),
     name: asString(raw.name),
     email: asString(raw.email),
     image: asString(raw.image) || null,

@@ -12,6 +12,7 @@ export interface User {
   name: string
   email: string
   role: UserRole
+  plan?: SubscriptionPlan
   emailVerified?: boolean
   image?: string
   phone?: string
@@ -49,6 +50,14 @@ export interface Application {
   studentEmail: string
   status: ApplicationStatus
   message?: string
+  studentPhone?: string
+  preferredSchedule?: string
+  studentNote?: string
+  tuitionTitle?: string
+  monthlyFee?: number
+  tutorId?: string
+  tutorName?: string
+  tutorEmail?: string
   createdAt: string
   updatedAt?: string
 }
@@ -60,6 +69,9 @@ export interface Payment {
   amount: number
   currency: string
   status: PaymentStatus
+  userName?: string
+  userEmail?: string
+  userRole?: UserRole
   tuitionId?: string
   stripeSessionId?: string
   stripePaymentIntentId?: string
