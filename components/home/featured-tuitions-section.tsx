@@ -3,6 +3,7 @@ import Link from "next/link"
 import { ArrowRight, Inbox, Sparkles } from "lucide-react"
 
 import { TuitionCard } from "@/components/shared/tuition-card"
+import { getFeaturedTuitions } from "@/lib/tuition-api"
 import { cn } from "@/lib/utils"
 import type { Tuition } from "@/types"
 
@@ -12,79 +13,7 @@ import {
   SECTION_SUBHEADING_CLASS,
 } from "./hero-section"
 
-const API_BASE_URL = (
-  process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"
-).replace(/\/+$/, "")
 const GRID_CLASS = "grid gap-5 sm:grid-cols-2 lg:grid-cols-3"
-
-function asString(value: unknown, fallback = ""): string {
-  return typeof value === "string" ? value : fallback
-}
-
-/** Defensively maps an API record so a partial backend response cannot crash the page. */
-function normalizeTuition(value: unknown): Tuition | null {
-  if (!value || typeof value !== "object") return null
-
-  const raw = value as Record<string, unknown>
-  const id = asString(raw._id) || asString(raw.id)
-  const title = asString(raw.title)
-  if (!id || !title) return null
-
-  const status = asString(raw.approvalStatus, "pending").toLowerCase()
-  const approvalStatus: Tuition["approvalStatus"] =
-    status === "approved"
-      ? "approved"
-      : status === "rejected"
-        ? "rejected"
-        : "pending"
-
-  return {
-    _id: id,
-    title,
-    subject: asString(raw.subject, "General"),
-    classLevel: asString(raw.classLevel, "All levels"),
-    mode: asString(raw.mode).toLowerCase() === "offline" ? "Offline" : "Online",
-    location: asString(raw.location, "—"),
-    monthlyFee: Number(raw.monthlyFee) || 0,
-    daysPerWeek: Number(raw.daysPerWeek) || 0,
-    bannerImage: asString(raw.bannerImage),
-    description: asString(raw.description, "No description provided yet."),
-    tutorName: asString(raw.tutorName, "MentorLagbe tutor"),
-    tutorEmail: asString(raw.tutorEmail),
-    approvalStatus,
-    isActive: raw.isActive === undefined ? true : Boolean(raw.isActive),
-    createdAt: asString(raw.createdAt),
-  }
-}
-
-async function getFeaturedTuitions(): Promise<Tuition[]> {
-  try {
-    const response = await fetch(`${API_BASE_URL}/api/tuitions?limit=6`, {
-      cache: "no-store",
-    })
-    if (!response.ok) return []
-
-    const payload: unknown = await response.json()
-    const items = Array.isArray(payload)
-      ? payload
-      : payload && typeof payload === "object"
-        ? ((payload as { data?: unknown }).data ??
-          (payload as { tuitions?: unknown }).tuitions)
-        : null
-
-    if (!Array.isArray(items)) return []
-
-    return items
-      .map(normalizeTuition)
-      .filter((item): item is Tuition => item !== null)
-      .filter((item) => item.approvalStatus === "approved" && item.isActive)
-      .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
-      .slice(0, 6)
-  } catch {
-    // The backend may not be running yet — keep the home page usable.
-    return []
-  }
-}
 
 function TuitionCardSkeleton() {
   return (
