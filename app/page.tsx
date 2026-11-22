@@ -2,6 +2,7 @@ import { Footer } from "@/components/footer"
 import {
   HeroSection,
   HowItWorksSection,
+  PricingSection,
   SubjectsStatsSection,
 } from "@/components/home"
 import { Navbar } from "@/components/navbar"
@@ -14,6 +15,7 @@ export default function Page() {
         <HeroSection />
         <HowItWorksSection />
         <SubjectsStatsSection />
+        <PricingSection />
       </main>
       <Footer />
     </div>

@@ -8,3 +8,4 @@ export {
 } from "./hero-section"
 export { HowItWorksSection } from "./how-it-works-section"
 export { SubjectsStatsSection } from "./subjects-stats-section"
+export { PricingSection, type PricingSectionProps } from "./pricing-section"

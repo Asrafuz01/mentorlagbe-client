@@ -21,4 +21,4 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 - Auth: `lib/auth.ts`, `lib/auth-client.ts`, `app/api/auth/[...all]/route.ts`.
 - UI: `components/brand.tsx`, `components/navbar/*`, `components/footer/*`, `components/home/*`.
-- Home page: `app/page.tsx` wires Navbar + HeroSection + HowItWorksSection + SubjectsStatsSection + Footer.
+- Home page: `app/page.tsx` wires Navbar + HeroSection + HowItWorksSection + SubjectsStatsSection + PricingSection + Footer.
