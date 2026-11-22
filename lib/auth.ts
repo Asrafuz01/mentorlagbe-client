@@ -5,16 +5,23 @@ import { MongoClient } from "mongodb"
 const client = new MongoClient(process.env.MONGODB_URI!)
 const db = client.db("mentorlagbedb")
 
+const googleClientId = process.env.GOOGLE_CLIENT_ID?.trim()
+const googleClientSecret = process.env.GOOGLE_CLIENT_SECRET?.trim()
+const socialProviders =
+  googleClientId && googleClientSecret
+    ? {
+        google: {
+          clientId: googleClientId,
+          clientSecret: googleClientSecret,
+        },
+      }
+    : {}
+
 export const auth = betterAuth({
   emailAndPassword: {
     enabled: true,
   },
-  socialProviders: {
-    google: {
-      clientId: process.env.GOOGLE_CLIENT_ID as string,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
-    },
-  },
+  socialProviders,
   user: {
     additionalFields: {
       role: {
