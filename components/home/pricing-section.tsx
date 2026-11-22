@@ -9,6 +9,7 @@ import {
   Users,
 } from "lucide-react"
 
+import { CheckoutButton } from "@/components/payments/checkout-button"
 import { cn } from "@/lib/utils"
 
 import {
@@ -30,6 +31,7 @@ type Plan = {
   ctaHref: string
   icon: LucideIcon
   featured?: boolean
+  checkoutPlan?: "student-pro" | "tutor-pro"
 }
 
 const PLANS: readonly Plan[] = [
@@ -67,6 +69,7 @@ const PLANS: readonly Plan[] = [
     ctaHref: "/pricing?plan=student-pro",
     icon: GraduationCap,
     featured: true,
+    checkoutPlan: "student-pro",
   },
   {
     id: "tutor-pro",
@@ -85,10 +88,11 @@ const PLANS: readonly Plan[] = [
     ctaHref: "/pricing?plan=tutor-pro",
     icon: Crown,
     featured: true,
+    checkoutPlan: "tutor-pro",
   },
 ]
 
-function PlanCard({ plan }: { plan: Plan }) {
+function PlanCard({ plan, checkout }: { plan: Plan; checkout: boolean }) {
   const Icon = plan.icon
 
   return (
@@ -140,15 +144,27 @@ function PlanCard({ plan }: { plan: Plan }) {
         ))}
       </ul>
 
-      <Link
-        href={plan.ctaHref}
-        className={cn(
-          "mt-6 w-full justify-center",
-          plan.featured ? PRIMARY_CTA_CLASS : SECONDARY_CTA_CLASS
-        )}
-      >
-        {plan.ctaLabel}
-      </Link>
+      {checkout && plan.checkoutPlan ? (
+        <CheckoutButton
+          plan={plan.checkoutPlan}
+          className={cn(
+            "mt-6 w-full",
+            plan.featured ? PRIMARY_CTA_CLASS : SECONDARY_CTA_CLASS
+          )}
+        >
+          {plan.ctaLabel}
+        </CheckoutButton>
+      ) : (
+        <Link
+          href={plan.ctaHref}
+          className={cn(
+            "mt-6 w-full justify-center",
+            plan.featured ? PRIMARY_CTA_CLASS : SECONDARY_CTA_CLASS
+          )}
+        >
+          {plan.ctaLabel}
+        </Link>
+      )}
     </li>
   )
 }
@@ -157,12 +173,15 @@ export type PricingSectionProps = {
   className?: string
   /** Hide the intro on /pricing where the page supplies its own heading. */
   showIntro?: boolean
+  /** Turn Pro CTAs into interactive Stripe checkout buttons. */
+  checkout?: boolean
   id?: string
 }
 
 export function PricingSection({
   className,
   showIntro = true,
+  checkout = false,
   id = "pricing",
 }: PricingSectionProps) {
   return (
@@ -199,7 +218,7 @@ export function PricingSection({
 
         <ul className={cn("grid gap-5 md:grid-cols-3", showIntro && "mt-12")}>
           {PLANS.map((plan) => (
-            <PlanCard key={plan.id} plan={plan} />
+            <PlanCard key={plan.id} plan={plan} checkout={checkout} />
           ))}
         </ul>
       </div>
