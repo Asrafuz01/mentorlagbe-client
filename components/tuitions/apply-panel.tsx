@@ -13,6 +13,7 @@ import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { AUTH_PATHS } from "@/components/navbar/nav-config"
 import { useSession } from "@/lib/auth-client"
+import { authenticatedFetch } from "@/lib/express-auth"
 import { TUITION_API_URL } from "@/lib/tuition-api"
 import { cn } from "@/lib/utils"
 
@@ -141,19 +142,21 @@ export function ApplyPanel({ tuitionId, tuitionTitle }: ApplyPanelProps) {
 
     setIsSubmitting(true)
     try {
-      const response = await fetch(`${TUITION_API_URL}/api/applications`, {
-        method: "POST",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          tuitionId,
-          studentName: user?.name ?? "",
-          studentEmail: user?.email ?? "",
-          studentPhone: studentPhone.trim(),
-          preferredSchedule: preferredSchedule.trim(),
-          studentNote: studentNote.trim(),
-        }),
-      })
+      const response = await authenticatedFetch(
+        `${TUITION_API_URL}/api/applications`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            tuitionId,
+            studentName: user?.name ?? "",
+            studentEmail: user?.email ?? "",
+            studentPhone: studentPhone.trim(),
+            preferredSchedule: preferredSchedule.trim(),
+            studentNote: studentNote.trim(),
+          }),
+        }
+      )
 
       const result: unknown = await response.json().catch(() => null)
       if (!response.ok) {

@@ -1,4 +1,5 @@
 import { API_BASE_URL } from "@/lib/api"
+import { authenticatedFetch } from "@/lib/express-auth"
 import { asString, normalizeTuition } from "@/lib/tuition-api"
 import type {
   Application,
@@ -219,8 +220,7 @@ export async function getCollection<T>(
   if (!path) return { items: [], error: null }
 
   try {
-    const response = await fetch(`${API_BASE_URL}${path}`, {
-      credentials: "include",
+    const response = await authenticatedFetch(`${API_BASE_URL}${path}`, {
       cache: "no-store",
     })
     const payload: unknown = await response.json().catch(() => null)
@@ -258,9 +258,8 @@ export async function sendMutation(
 ): Promise<void> {
   let response: Response
   try {
-    response = await fetch(`${API_BASE_URL}${path}`, {
+    response = await authenticatedFetch(`${API_BASE_URL}${path}`, {
       method,
-      credentials: "include",
       headers:
         body === undefined ? undefined : { "Content-Type": "application/json" },
       body: body === undefined ? undefined : JSON.stringify(body),

@@ -21,6 +21,7 @@ import {
 } from "@/components/navbar/session-utils"
 import { Button } from "@/components/ui/button"
 import { signOut } from "@/lib/auth-client"
+import { clearExpressToken } from "@/lib/express-auth"
 import { cn } from "@/lib/utils"
 
 import type { DashboardUser } from "./dashboard-user"
@@ -75,6 +76,7 @@ export function DashboardTopbar({
     if (isSigningOut) return
     setIsSigningOut(true)
     try {
+      clearExpressToken()
       await signOut()
       router.replace("/")
       router.refresh()

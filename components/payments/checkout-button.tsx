@@ -8,6 +8,7 @@ import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { useSession } from "@/lib/auth-client"
 import { API_BASE_URL } from "@/lib/api"
+import { authenticatedFetch } from "@/lib/express-auth"
 
 export type ProPlan = "student-pro" | "tutor-pro"
 
@@ -67,11 +68,10 @@ export function CheckoutButton({
 
     setIsLoading(true)
     try {
-      const response = await fetch(
+      const response = await authenticatedFetch(
         `${API_BASE_URL}/api/payments/create-checkout-session`,
         {
           method: "POST",
-          credentials: "include",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             plan,

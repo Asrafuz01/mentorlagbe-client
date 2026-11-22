@@ -28,6 +28,7 @@ import { getAvatarSrc } from "@/components/navbar/session-utils"
 import { Button } from "@/components/ui/button"
 import { API_BASE_URL } from "@/lib/api"
 import { authClient, useSession } from "@/lib/auth-client"
+import { authenticatedFetch } from "@/lib/express-auth"
 import { uploadImageToImgBB } from "@/lib/imgbb"
 import { cn } from "@/lib/utils"
 
@@ -140,17 +141,19 @@ function ProfileFields({ user }: { user: DashboardUser }) {
       }
 
       // Extended profile fields live on the Express users collection.
-      const response = await fetch(`${API_BASE_URL}/api/users/profile`, {
-        method: "PATCH",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name,
-          phone: form.phone.trim(),
-          bio: form.bio.trim(),
-          image,
-        }),
-      })
+      const response = await authenticatedFetch(
+        `${API_BASE_URL}/api/users/profile`,
+        {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name,
+            phone: form.phone.trim(),
+            bio: form.bio.trim(),
+            image,
+          }),
+        }
+      )
 
       const payload: unknown = await response.json().catch(() => null)
       if (!response.ok) {

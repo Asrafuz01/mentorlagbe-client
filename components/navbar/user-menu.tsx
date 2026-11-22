@@ -8,6 +8,7 @@ import { LayoutDashboard, LoaderCircle, LogOut, UserRound } from "lucide-react"
 
 import { Button, buttonVariants } from "@/components/ui/button"
 import { authClient } from "@/lib/auth-client"
+import { clearExpressToken } from "@/lib/express-auth"
 import { cn } from "@/lib/utils"
 
 import { AUTH_PATHS } from "./nav-config"
@@ -102,6 +103,7 @@ export function UserMenu({ user, stacked = false, onNavigate }: UserMenuProps) {
     setIsSigningOut(true)
 
     try {
+      clearExpressToken()
       await authClient.signOut()
       onNavigate?.()
       router.replace(AUTH_PATHS.home)
