@@ -21,7 +21,10 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 - Auth: `lib/auth.ts` (user `role`/`plan` fields), `lib/auth-client.ts` (`inferAdditionalFields`), `app/api/auth/[...all]/route.ts`.
 - Auth pages: `app/sign-up`, `app/sign-in` with shared UI in `components/auth/*`; `sonner` `<Toaster />` mounted in `app/layout.tsx`.
-- UI: `components/brand.tsx`, `components/navbar/*`, `components/footer/*`, `components/home/*`, `components/shared/*`, `components/tuitions/*`.
+- UI: `components/brand.tsx`, `components/navbar/*`, `components/footer/*`, `components/home/*`, `components/shared/*`, `components/tuitions/*`, `components/payments/*`.
 - Tuitions: `lib/tuition-api.ts` (shared fetch/normalize), `/tuitions` with server search/filter/pagination, `/tuitions/[id]` with role-gated student application POST.
 - Types: `types/index.ts` holds shared `User`, `Tuition`, `Application`, `Payment` interfaces and status unions.
 - Home page: `app/page.tsx` wires Navbar + HeroSection + FeaturedTuitionsSection + HowItWorksSection + SubjectsStatsSection + PricingSection + Footer.
+- Public pages: `/pricing` (interactive Stripe checkout via `components/payments/*`), `/about` (mission + reused HowItWorksSection), `/payment/success` (optional verify), `/payment/cancel`.
+- Global UI: `app/loading.tsx` (accessible spinner/skeleton), `app/not-found.tsx` (404), `app/error.tsx` (client error boundary with `retry()`).
+- API URLs: `lib/api.ts` exports shared `API_BASE_URL` for backend calls.
