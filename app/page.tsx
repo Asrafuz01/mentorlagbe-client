@@ -1,5 +1,6 @@
 import { Footer } from "@/components/footer"
 import {
+  FeaturedTuitionsSection,
   HeroSection,
   HowItWorksSection,
   PricingSection,
@@ -13,6 +14,7 @@ export default function Page() {
       <Navbar />
       <main className="flex-1">
         <HeroSection />
+        <FeaturedTuitionsSection />
         <HowItWorksSection />
         <SubjectsStatsSection />
         <PricingSection />

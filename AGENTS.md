@@ -20,5 +20,6 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 ## Completed
 
 - Auth: `lib/auth.ts`, `lib/auth-client.ts`, `app/api/auth/[...all]/route.ts`.
-- UI: `components/brand.tsx`, `components/navbar/*`, `components/footer/*`, `components/home/*`.
-- Home page: `app/page.tsx` wires Navbar + HeroSection + HowItWorksSection + SubjectsStatsSection + PricingSection + Footer.
+- UI: `components/brand.tsx`, `components/navbar/*`, `components/footer/*`, `components/home/*`, `components/shared/*`.
+- Types: `types/index.ts` holds shared `User`, `Tuition`, `Application`, `Payment` interfaces and status unions.
+- Home page: `app/page.tsx` wires Navbar + HeroSection + FeaturedTuitionsSection + HowItWorksSection + SubjectsStatsSection + PricingSection + Footer.
