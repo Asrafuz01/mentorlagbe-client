@@ -1,0 +1,4 @@
+export { Navbar, default } from "./navbar"
+export type { NavbarProps } from "./navbar"
+export { Brand } from "@/components/brand"
+export { AUTH_PATHS, NAV_ITEMS } from "./nav-config"
