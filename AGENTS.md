@@ -30,3 +30,4 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 - API URLs: `lib/api.ts` exports shared `API_BASE_URL` for backend calls.
 - Dashboard: `app/dashboard/layout.tsx` shell with session-safe guard (never redirects while `isPending`), collapsible sidebar + mobile drawer, role nav, `DashboardStatCard`; `/dashboard` role redirect; `/dashboard/profile` with ImgBB upload (`lib/imgbb.ts`) + auth/backend sync.
 - ImgBB: `lib/imgbb.ts` `uploadImageToImgBB(file)` reuses `NEXT_PUBLIC_IMGBB_API_KEY` for profile and tutor tuition images.
+- Role dashboards: `app/dashboard/student/*` (overview + applications), `app/dashboard/tutor/*` (overview, post/CRUD tuitions, applicants), `app/dashboard/admin/*` (overview, users, tuition approvals, transactions). Shared defensive fetch/mutations in `lib/dashboard-api.ts`, formats in `lib/dashboard-format.ts`, and reusable states/headers/badges/hook in `components/dashboard/*`.
