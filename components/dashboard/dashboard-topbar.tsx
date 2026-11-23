@@ -20,6 +20,7 @@ import {
   getInitials,
 } from "@/components/navbar/session-utils"
 import { Button } from "@/components/ui/button"
+import { clearAuthIdentityCache } from "@/lib/auth-identity"
 import { signOut } from "@/lib/auth-client"
 import { clearExpressToken } from "@/lib/express-auth"
 import { cn } from "@/lib/utils"
@@ -79,6 +80,7 @@ export function DashboardTopbar({
     try {
       clearExpressToken()
       await signOut()
+      clearAuthIdentityCache(user.email)
       toast.success("Signed out successfully.")
       router.replace("/")
       router.refresh()

@@ -45,8 +45,13 @@ type ProfileForm = {
   image: string
 }
 
+type ProfileFieldsProps = {
+  user: DashboardUser
+  refreshIdentity: () => void
+}
+
 /** Mounted only once the session resolves, so form state can start from props. */
-function ProfileFields({ user }: { user: DashboardUser }) {
+function ProfileFields({ user, refreshIdentity }: ProfileFieldsProps) {
   const router = useRouter()
   const [form, setForm] = useState<ProfileForm>({
     name: user.name,
@@ -61,9 +66,8 @@ function ProfileFields({ user }: { user: DashboardUser }) {
   const [profileLoadFailed, setProfileLoadFailed] = useState(false)
 
   useEffect(() => {
-    const objectUrl = previewRef.current
     return () => {
-      if (objectUrl) URL.revokeObjectURL(objectUrl)
+      if (previewRef.current) URL.revokeObjectURL(previewRef.current)
     }
   }, [])
 
@@ -220,6 +224,7 @@ function ProfileFields({ user }: { user: DashboardUser }) {
 
       toast.success("Profile updated successfully.")
       clearPreview()
+      refreshIdentity()
       router.refresh()
     } catch (error) {
       toast.error(
@@ -475,8 +480,8 @@ function ProfileFields({ user }: { user: DashboardUser }) {
 }
 
 export default function UpdateProfilePage() {
-  const { user, isPending } = useDashboardIdentity()
+  const { user, isPending, refresh } = useDashboardIdentity()
 
   if (isPending || !user) return <DashboardSkeleton />
-  return <ProfileFields user={user} />
+  return <ProfileFields user={user} refreshIdentity={refresh} />
 }

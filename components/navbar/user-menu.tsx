@@ -8,6 +8,7 @@ import { LayoutDashboard, LoaderCircle, LogOut, UserRound } from "lucide-react"
 import { toast } from "sonner"
 
 import { Button, buttonVariants } from "@/components/ui/button"
+import { clearAuthIdentityCache } from "@/lib/auth-identity"
 import { authClient } from "@/lib/auth-client"
 import { clearExpressToken } from "@/lib/express-auth"
 import { cn } from "@/lib/utils"
@@ -106,6 +107,7 @@ export function UserMenu({ user, stacked = false, onNavigate }: UserMenuProps) {
     try {
       clearExpressToken()
       await authClient.signOut()
+      clearAuthIdentityCache(user.email)
       toast.success("Signed out successfully.")
       onNavigate?.()
       router.replace(AUTH_PATHS.home)

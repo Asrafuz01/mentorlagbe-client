@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useCallback, useSyncExternalStore } from "react"
 
 import { API_BASE_URL } from "@/lib/api"
 import { useSession } from "@/lib/auth-client"
@@ -8,6 +8,7 @@ import { authenticatedFetch } from "@/lib/express-auth"
 
 const VALID_ROLES = new Set(["student", "tutor", "admin"])
 const VALID_PLANS = new Set(["free", "pro", "student-pro", "tutor-pro"])
+const PROFILE_TTL_MS = 60 * 1000
 
 export type AuthIdentity = {
   id: string
@@ -20,9 +21,100 @@ export type AuthIdentity = {
   bio: string
 }
 
-type ProfileState = {
+type ProfileSnapshot = {
   email: string
   payload: Record<string, unknown> | null
+  loaded: boolean
+  attemptedAt: number
+}
+
+const EMPTY_SNAPSHOT: ProfileSnapshot = {
+  email: "",
+  payload: null,
+  loaded: false,
+  attemptedAt: 0,
+}
+
+// Navbar, dashboard shell, and page-level hooks all need the same Express
+// profile. A tiny external store shares the result and its in-flight request.
+const profileSnapshots = new Map<string, ProfileSnapshot>()
+const profileRequests = new Map<string, Promise<void>>()
+const listeners = new Set<() => void>()
+
+function emitChange() {
+  for (const listener of listeners) listener()
+}
+
+function subscribe(listener: () => void) {
+  listeners.add(listener)
+  return () => {
+    listeners.delete(listener)
+  }
+}
+
+function getProfileSnapshot(email: string): ProfileSnapshot {
+  return email ? profileSnapshots.get(email) ?? EMPTY_SNAPSHOT : EMPTY_SNAPSHOT
+}
+
+function setProfileSnapshot(
+  email: string,
+  payload: Record<string, unknown> | null
+) {
+  profileSnapshots.set(email, {
+    email,
+    payload,
+    loaded: true,
+    attemptedAt: Date.now(),
+  })
+  emitChange()
+}
+
+/** Drops cached profiles so the next render/refetch sees fresh server data. */
+export function clearAuthIdentityCache(email?: string) {
+  if (email) {
+    profileSnapshots.delete(email)
+  } else {
+    profileSnapshots.clear()
+  }
+  emitChange()
+}
+
+async function fetchAuthProfile(email: string, force = false) {
+  const inFlight = profileRequests.get(email)
+  if (inFlight) return inFlight
+
+  const existing = profileSnapshots.get(email)
+  if (
+    !force &&
+    existing?.loaded &&
+    Date.now() - existing.attemptedAt < PROFILE_TTL_MS
+  ) {
+    return
+  }
+
+  const request = (async () => {
+    try {
+      const response = await authenticatedFetch(
+        `${API_BASE_URL}/api/users/me`,
+        { cache: "no-store" }
+      )
+      const data: unknown = await response.json().catch(() => null)
+      if (response.ok && data && typeof data === "object") {
+        setProfileSnapshot(email, data as Record<string, unknown>)
+        return
+      }
+    } catch {
+      // Fall back to the BetterAuth session, but allow a retry after the TTL.
+    }
+    setProfileSnapshot(email, null)
+  })()
+
+  profileRequests.set(email, request)
+  try {
+    await request
+  } finally {
+    if (profileRequests.get(email) === request) profileRequests.delete(email)
+  }
 }
 
 function readText(value: unknown): string {
@@ -83,49 +175,38 @@ function mergeProfile(
  */
 export function useAuthIdentity() {
   const { data: session, isPending } = useSession()
-  const [profile, setProfile] = useState<ProfileState | null>(null)
-
   const sessionIdentity = fromSession(session?.user)
   const email = sessionIdentity?.email ?? ""
-  const profileForEmail = profile?.email === email ? profile.payload : null
+  const profile = useSyncExternalStore(
+    subscribe,
+    () => getProfileSnapshot(email),
+    () => EMPTY_SNAPSHOT
+  )
+
+  const profilePayload =
+    profile.email === email && profile.loaded ? profile.payload : null
   const identity = sessionIdentity
-    ? profileForEmail
-      ? mergeProfile(sessionIdentity, profileForEmail)
+    ? profilePayload
+      ? mergeProfile(sessionIdentity, profilePayload)
       : sessionIdentity
     : null
-  const isCheckingProfile = Boolean(email) && profile?.email !== email
+  const isCheckingProfile = Boolean(email) && profile.email !== email
 
   useEffect(() => {
-    if (isPending || !email || profile?.email === email) return
+    if (isPending || !email) return
+    void fetchAuthProfile(email)
+  }, [email, isPending])
 
-    let cancelled = false
-
-    async function loadProfile() {
-      let payload: Record<string, unknown> | null = null
-      try {
-        const response = await authenticatedFetch(
-          `${API_BASE_URL}/api/users/me`,
-          { cache: "no-store" }
-        )
-        const data: unknown = await response.json().catch(() => null)
-        if (response.ok && data && typeof data === "object") {
-          payload = data as Record<string, unknown>
-        }
-      } catch {
-        // Keep the session identity as a fallback when the profile is unavailable.
-      }
-      if (!cancelled) setProfile({ email, payload })
-    }
-
-    void loadProfile()
-    return () => {
-      cancelled = true
-    }
-  }, [email, isPending, profile?.email])
+  const refresh = useCallback(() => {
+    if (!email) return
+    clearAuthIdentityCache(email)
+    void fetchAuthProfile(email, true)
+  }, [email])
 
   return {
     identity,
     isPending: isPending || isCheckingProfile,
     isUnauthenticated: !isPending && !sessionIdentity,
+    refresh,
   }
 }
