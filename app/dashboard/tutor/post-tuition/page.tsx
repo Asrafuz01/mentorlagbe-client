@@ -140,11 +140,13 @@ function PostTuitionForm({
     try {
       const url = await uploadImageToImgBB(file)
       update("bannerImage", url)
-      toast.success("Banner uploaded.")
+      toast.success("Image ready. Submit your tuition to save it.")
     } catch (error) {
       clearPreview()
       toast.error(
-        error instanceof Error ? error.message : "Could not upload the banner."
+        error instanceof Error
+          ? error.message
+          : "Could not upload your image. Please try again."
       )
     } finally {
       setUploading(false)
@@ -394,16 +396,16 @@ function PostTuitionForm({
         </section>
 
         <aside className="h-fit rounded-2xl border border-border bg-card p-5 shadow-sm sm:p-6">
-          <h2 className="text-base font-semibold">Banner image</h2>
+          <h2 className="text-base font-semibold">Tuition Image</h2>
           <p className="mt-1 text-xs text-muted-foreground">
-            A clear photo helps students recognise your class.
+            Add a clear image that shows what your class is about.
           </p>
           <div className="mt-5 flex flex-col items-center text-center">
             <span className="relative grid aspect-video w-full place-items-center overflow-hidden rounded-xl bg-muted ring-1 ring-border">
               {bannerSrc ? (
                 <Image
                   src={bannerSrc}
-                  alt="Banner preview"
+                  alt="Tuition image preview"
                   fill
                   unoptimized
                   className="object-cover"
@@ -428,7 +430,7 @@ function PostTuitionForm({
               className="mt-4 inline-flex h-9 cursor-pointer items-center gap-2 rounded-lg border border-input bg-background px-3 text-sm font-medium transition-colors hover:bg-muted"
             >
               <Camera aria-hidden="true" />
-              Upload image
+              Upload Image
             </label>
             <input
               id="tuition-banner"
@@ -438,6 +440,9 @@ function PostTuitionForm({
               disabled={uploading || submitting}
               className="sr-only"
             />
+            <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
+              PNG, JPG, or WEBP up to 5 MB.
+            </p>
             {form.bannerImage ? (
               <button
                 type="button"
@@ -448,7 +453,7 @@ function PostTuitionForm({
                 className="mt-3 inline-flex items-center gap-1.5 text-xs font-medium text-destructive hover:underline"
               >
                 <RotateCcw aria-hidden="true" />
-                Remove image
+                Remove Image
               </button>
             ) : null}
           </div>

@@ -12,7 +12,7 @@ export async function uploadImageToImgBB(file: File): Promise<string> {
   const apiKey = process.env.NEXT_PUBLIC_IMGBB_API_KEY
   if (!apiKey) {
     throw new Error(
-      "Image upload is not configured. Add an image URL instead or contact support."
+      "Image upload is unavailable right now. You can add an image URL instead."
     )
   }
 
@@ -26,7 +26,7 @@ export async function uploadImageToImgBB(file: File): Promise<string> {
       { method: "POST", body: formData }
     )
   } catch {
-    throw new Error("Could not reach the image service. Please try again.")
+    throw new Error("Could not upload your image. Please try again.")
   }
 
   const payload = (await response
@@ -34,13 +34,15 @@ export async function uploadImageToImgBB(file: File): Promise<string> {
     .catch(() => null)) as ImgBBApiResponse | null
   if (!response.ok || !payload?.success) {
     throw new Error(
-      payload?.error?.message || `Image upload failed (${response.status}).`
+      "We couldn't upload your image. Please try again or add an image URL."
     )
   }
 
   const url = payload.data?.display_url || payload.data?.url
   if (!url) {
-    throw new Error("Image upload finished but no image URL was returned.")
+    throw new Error(
+      "Upload finished, but we couldn't get your image link. Please try again."
+    )
   }
 
   return url

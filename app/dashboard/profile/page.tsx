@@ -146,13 +146,13 @@ function ProfileFields({ user }: { user: DashboardUser }) {
     try {
       const url = await uploadImageToImgBB(file)
       update("image", url)
-      toast.success("Photo uploaded.")
+      toast.success("Photo ready. Save your profile to keep it.")
     } catch (error) {
       clearPreview()
       toast.error(
         error instanceof Error
           ? error.message
-          : "Could not upload the image. Please try again."
+          : "Could not upload your photo. Please try again."
       )
     } finally {
       setUploading(false)
@@ -249,10 +249,10 @@ function ProfileFields({ user }: { user: DashboardUser }) {
         onSubmit={handleSubmit}
         className="grid gap-6 lg:grid-cols-[20rem_minmax(0,1fr)]"
       >
-        <section className="h-fit rounded-2xl border border-border bg-card p-6 shadow-sm">
-          <h2 className="text-base font-semibold">Profile photo</h2>
+        <section className="h-fit rounded-2xl border border-border bg-card p-5 shadow-sm sm:p-6">
+          <h2 className="text-base font-semibold">Profile Photo</h2>
           <p className="mt-1 text-xs text-muted-foreground">
-            This image appears next to your name across MentorLagbe.
+            Add a photo so tutors and students can recognize you.
           </p>
 
           <div className="mt-6 flex flex-col items-center text-center">
@@ -260,7 +260,7 @@ function ProfileFields({ user }: { user: DashboardUser }) {
               {avatarSrc ? (
                 <Image
                   src={avatarSrc}
-                  alt="Profile preview"
+                  alt="Profile photo preview"
                   width={112}
                   height={112}
                   unoptimized
@@ -287,7 +287,7 @@ function ProfileFields({ user }: { user: DashboardUser }) {
               className="mt-5 inline-flex h-9 cursor-pointer items-center gap-2 rounded-lg border border-input bg-background px-3 text-sm font-medium transition-colors hover:bg-muted"
             >
               <Camera aria-hidden="true" />
-              Choose image
+              Upload Photo
             </label>
             <input
               id="avatar-file"
@@ -298,7 +298,7 @@ function ProfileFields({ user }: { user: DashboardUser }) {
               className="sr-only"
             />
             <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
-              PNG, JPG or WEBP up to 5 MB. Uploads directly to ImgBB.
+              PNG, JPG, or WEBP up to 5 MB.
             </p>
             {previewUrl || form.image ? (
               <button
@@ -311,14 +311,14 @@ function ProfileFields({ user }: { user: DashboardUser }) {
                 className="mt-3 inline-flex items-center gap-1.5 text-xs font-medium text-destructive hover:underline"
               >
                 <RotateCcw aria-hidden="true" />
-                Remove photo
+                Remove Photo
               </button>
             ) : null}
           </div>
 
           <div className="mt-6 border-t border-border pt-5">
             <label htmlFor="image-url" className={LABEL_CLASS}>
-              Or paste an image URL
+              Or paste a photo URL
             </label>
             <div className="relative">
               <ImagePlus

@@ -502,7 +502,7 @@ export default function MyTuitionsPage() {
                           className={LABEL_CLASS}
                           htmlFor={`edit-banner-${tuition._id}`}
                         >
-                          Banner Image URL
+                          Tuition Image URL
                         </label>
                         <input
                           id={`edit-banner-${tuition._id}`}
@@ -511,6 +511,7 @@ export default function MyTuitionsPage() {
                           onChange={(event) =>
                             setEditField("bannerImage", event.target.value)
                           }
+                          placeholder="https://example.com/tuition.jpg"
                           disabled={busy}
                           className={FIELD_CLASS}
                         />
