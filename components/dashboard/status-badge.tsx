@@ -7,6 +7,8 @@ const STATUS_STYLES: Record<string, string> = {
     "bg-emerald-500/10 text-emerald-700 ring-emerald-500/20 dark:text-emerald-400",
   accepted:
     "bg-emerald-500/10 text-emerald-700 ring-emerald-500/20 dark:text-emerald-400",
+  active:
+    "bg-emerald-500/10 text-emerald-700 ring-emerald-500/20 dark:text-emerald-400",
   completed:
     "bg-emerald-500/10 text-emerald-700 ring-emerald-500/20 dark:text-emerald-400",
   rejected: "bg-destructive/10 text-destructive ring-destructive/20",

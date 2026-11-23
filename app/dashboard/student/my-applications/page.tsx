@@ -17,6 +17,7 @@ import {
   DataEmpty,
   DataError,
   DataLoading,
+  isOwnRecord,
   StatusBadge,
   toDashboardUser,
   useDashboardCollection,
@@ -31,16 +32,17 @@ import type { Application } from "@/types"
 export default function MyApplicationsPage() {
   const { data: session } = useSession()
   const user = toDashboardUser(session?.user)
-  const path = user?.id
-    ? `/api/applications?studentId=${encodeURIComponent(user.id)}`
-    : ""
   const applications = useDashboardCollection<Application>(
-    path,
+    "/api/applications",
     normalizeApplication
   )
   const [busyId, setBusyId] = useState<string | null>(null)
 
   if (!user) return <DashboardSkeleton />
+
+  const visible = applications.items.filter((item) =>
+    isOwnRecord(item, user, "student")
+  )
 
   async function handleCancel(id: string) {
     if (
@@ -92,7 +94,7 @@ export default function MyApplicationsPage() {
       ) : null}
 
       {!applications.loading && !applications.error ? (
-        applications.items.length === 0 ? (
+        visible.length === 0 ? (
           <DataEmpty
             title="No applications yet"
             description="Find a tuition that fits your goals and send your first application."
@@ -101,7 +103,7 @@ export default function MyApplicationsPage() {
           />
         ) : (
           <ul className="space-y-3">
-            {applications.items.map((application) => {
+            {visible.map((application) => {
               const isBusy = busyId === application._id
               return (
                 <li

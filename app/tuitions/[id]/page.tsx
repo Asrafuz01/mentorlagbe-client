@@ -60,7 +60,9 @@ export default async function TuitionDetailsPage({
   const { id } = await params
   const tuition = await getTuitionById(id)
 
-  if (!tuition) return <NotFoundState />
+  if (!tuition || tuition.approvalStatus !== "approved" || !tuition.isActive) {
+    return <NotFoundState />
+  }
 
   const hasBanner = tuition.bannerImage.trim().length > 0
 

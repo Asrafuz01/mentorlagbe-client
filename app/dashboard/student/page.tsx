@@ -17,6 +17,7 @@ import {
   DashboardStatCard,
   DataError,
   getPlanLabel,
+  isOwnRecord,
   toDashboardUser,
   useDashboardCollection,
 } from "@/components/dashboard"
@@ -29,17 +30,16 @@ const STAT_CLASS = "min-h-32"
 export default function StudentOverviewPage() {
   const { data: session } = useSession()
   const user = toDashboardUser(session?.user)
-  const path = user?.id
-    ? `/api/applications?studentId=${encodeURIComponent(user.id)}`
-    : ""
   const applications = useDashboardCollection<Application>(
-    path,
+    "/api/applications",
     normalizeApplication
   )
 
   if (!user) return <DashboardSkeleton />
 
-  const items = applications.items
+  const items = applications.items.filter((item) =>
+    isOwnRecord(item, user, "student")
+  )
   const accepted = items.filter((item) => item.status === "accepted").length
   const pending = items.filter((item) => item.status === "pending").length
   const isPro = user.plan !== "free"

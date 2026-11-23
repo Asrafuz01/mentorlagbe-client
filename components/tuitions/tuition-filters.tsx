@@ -27,7 +27,14 @@ export type TuitionFiltersProps = {
 export function TuitionFilters({ filters }: TuitionFiltersProps) {
   const router = useRouter()
   const [search, setSearch] = useState(filters.search)
+  const [syncedSearch, setSyncedSearch] = useState(filters.search)
   const hasFilters = Object.values(filters).some(Boolean)
+
+  // Keep the draft input aligned when navigation changes the committed filter.
+  if (filters.search !== syncedSearch) {
+    setSyncedSearch(filters.search)
+    setSearch(filters.search)
+  }
 
   function update(next: Partial<TuitionFilters>) {
     router.push(buildTuitionsHref({ ...filters, ...next }))
