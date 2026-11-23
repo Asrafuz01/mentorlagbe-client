@@ -5,7 +5,7 @@ export type TuitionMode = "Online" | "Offline"
 export type ApprovalStatus = "pending" | "approved" | "rejected"
 export type ApplicationStatus = "pending" | "accepted" | "rejected"
 export type PaymentStatus = "pending" | "completed" | "failed" | "refunded"
-export type SubscriptionPlan = "free" | "student-pro" | "tutor-pro"
+export type SubscriptionPlan = "free" | "pro" | "student-pro" | "tutor-pro"
 
 export interface User {
   _id: string

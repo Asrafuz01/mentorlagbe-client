@@ -19,6 +19,8 @@ function asString(value: unknown): string {
 
 export function getPlanLabel(plan?: string | null): string {
   switch (plan?.trim().toLowerCase()) {
+    case "pro":
+      return "Pro"
     case "student-pro":
       return "Pro Student"
     case "tutor-pro":

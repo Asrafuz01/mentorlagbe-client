@@ -61,7 +61,9 @@ function toRole(value: unknown): UserRole {
 
 function toPlan(value: unknown): SubscriptionPlan {
   const plan = asString(value).trim().toLowerCase()
-  return plan === "student-pro" || plan === "tutor-pro" ? plan : "free"
+  return plan === "pro" || plan === "student-pro" || plan === "tutor-pro"
+    ? plan
+    : "free"
 }
 
 function toApplicationStatus(value: unknown): ApplicationStatus {

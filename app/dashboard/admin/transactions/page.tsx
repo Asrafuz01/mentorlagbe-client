@@ -16,6 +16,7 @@ import type { Payment } from "@/types"
 
 const PLAN_LABELS: Record<string, string> = {
   free: "Free",
+  pro: "Pro",
   "student-pro": "Student Pro",
   "tutor-pro": "Tutor Pro",
 }
