@@ -13,9 +13,15 @@ type CachedToken = {
   expiresAt: number
 }
 
+type TokenExchangeError = {
+  status: number
+  message: string
+}
+
 let tokenCache: CachedToken | null = null
 let tokenRequest: Promise<string | null> | null = null
 let tokenGeneration = 0
+let lastTokenError: TokenExchangeError | null = null
 let signupHint: { email: string; role: string; plan: string } | null = null
 
 const FALLBACK_TOKEN_TTL_MS = 6 * 24 * 60 * 60 * 1000
@@ -75,6 +81,7 @@ function resetTokenCache() {
 /** Clears the cached Express JWT when the BetterAuth session ends. */
 export function clearExpressToken() {
   resetTokenCache()
+  lastTokenError = null
   signupHint = null
 }
 
@@ -99,6 +106,18 @@ export function setSignupRoleHint(input: {
   }
 }
 
+function readPayloadMessage(payload: unknown): string {
+  if (!payload || typeof payload !== "object") return ""
+  const record = payload as Record<string, unknown>
+  return readText(record.message) || readText(record.error)
+}
+
+function tokenFailure(status: number, message: string): null {
+  resetTokenCache()
+  lastTokenError = { status, message }
+  return null
+}
+
 /**
  * Exchanges the active BetterAuth session for a signed Express JWT.
  * Concurrent callers share one request, and successful tokens are cached
@@ -118,11 +137,20 @@ export async function getExpressToken(
 
   const generation = tokenGeneration
   const request = (async () => {
-    const user = readSessionUser(await authClient.getSession())
+    let sessionResult: unknown
+    try {
+      sessionResult = await authClient.getSession()
+    } catch {
+      return tokenFailure(
+        503,
+        "Could not verify your session. Please try again."
+      )
+    }
+
+    const user = readSessionUser(sessionResult)
     const email = readText(user?.email).toLowerCase()
     if (!user || !email) {
-      resetTokenCache()
-      return null
+      return tokenFailure(401, "Please sign in to continue.")
     }
 
     const hint = signupHint?.email === email ? signupHint : null
@@ -131,35 +159,49 @@ export async function getExpressToken(
     const image = readText(user.image)
 
     // Same-origin proxy avoids cross-port cookie issues in local dev.
-    const response = await fetch("/api/auth/jwt", {
-      method: "POST",
-      credentials: "include",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        email,
-        name: readText(user.name) || email.split("@")[0],
-        ...(role ? { role } : {}),
-        ...(plan ? { plan } : {}),
-        ...(image ? { image } : {}),
-      }),
-    })
-
-    if (!response.ok) {
-      resetTokenCache()
-      return null
+    let response: Response
+    try {
+      response = await fetch("/api/auth/jwt", {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email,
+          name: readText(user.name) || email.split("@")[0],
+          ...(role ? { role } : {}),
+          ...(plan ? { plan } : {}),
+          ...(image ? { image } : {}),
+        }),
+      })
+    } catch {
+      return tokenFailure(
+        503,
+        "Could not reach the authentication service. Please try again."
+      )
     }
 
     const payload: unknown = await response.json().catch(() => null)
+    if (!response.ok) {
+      return tokenFailure(
+        response.status,
+        readPayloadMessage(payload) ||
+          "Your session could not be verified. Please sign in again."
+      )
+    }
+
     const token =
       payload && typeof payload === "object"
         ? readText((payload as Record<string, unknown>).token)
         : ""
 
     if (!token) {
-      resetTokenCache()
-      return null
+      return tokenFailure(
+        502,
+        "Authentication succeeded but no access token was returned. Please try again."
+      )
     }
 
+    lastTokenError = null
     if (signupHint?.email === email) signupHint = null
     if (generation === tokenGeneration) {
       tokenCache = { token, expiresAt: getTokenExpiry(token) }
@@ -175,14 +217,21 @@ export async function getExpressToken(
   }
 }
 
+function missingTokenError(): Error {
+  const message =
+    lastTokenError?.message ||
+    "Your session could not be verified. Please sign in again."
+  return new Error(message)
+}
+
 /** Adds the Express JWT to a request and retries once with a fresh token on 401. */
 export async function authenticatedFetch(
   url: string,
   init: RequestInit = {}
 ): Promise<Response> {
-  const send = async (token: string | null) => {
+  const send = async (token: string) => {
     const headers = new Headers(init.headers)
-    if (token) headers.set("Authorization", `Bearer ${token}`)
+    headers.set("Authorization", `Bearer ${token}`)
     return fetch(url, {
       ...init,
       headers,
@@ -191,10 +240,13 @@ export async function authenticatedFetch(
   }
 
   const token = await getExpressToken()
+  if (!token) throw missingTokenError()
+
   const response = await send(token)
   if (response.status !== 401) return response
 
   const freshToken = await getExpressToken(true)
-  if (!freshToken || freshToken === token) return response
+  if (!freshToken) throw missingTokenError()
+  if (freshToken === token) return response
   return send(freshToken)
 }

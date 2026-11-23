@@ -104,9 +104,16 @@ function ProfileFields({ user, refreshIdentity }: ProfileFieldsProps) {
               ? record.image
               : current.image,
         }))
-      } catch {
+      } catch (error) {
         // Keep session values, but block saving extended fields to avoid data loss.
-        if (!cancelled) setProfileLoadFailed(true)
+        if (!cancelled) {
+          setProfileLoadFailed(true)
+          toast.error(
+            error instanceof Error
+              ? error.message
+              : "Could not load your profile details."
+          )
+        }
       }
     }
 

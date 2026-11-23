@@ -244,10 +244,13 @@ export async function getCollection<T>(
       items: records.map(normalize).filter((item): item is T => item !== null),
       error: null,
     }
-  } catch {
+  } catch (error) {
     return {
       items: [],
-      error: "Could not reach the server. Please try again later.",
+      error:
+        error instanceof Error && !(error instanceof TypeError)
+          ? error.message
+          : "Could not reach the server. Please try again later.",
     }
   }
 }
@@ -266,7 +269,8 @@ export async function sendMutation(
         body === undefined ? undefined : { "Content-Type": "application/json" },
       body: body === undefined ? undefined : JSON.stringify(body),
     })
-  } catch {
+  } catch (error) {
+    if (error instanceof Error && !(error instanceof TypeError)) throw error
     throw new Error("Could not reach the server. Please try again later.")
   }
 

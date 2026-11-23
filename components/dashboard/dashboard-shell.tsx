@@ -3,6 +3,8 @@
 import { useEffect, useState, type ReactNode } from "react"
 import { usePathname, useRouter } from "next/navigation"
 
+import { clearExpressToken } from "@/lib/express-auth"
+
 import { DashboardSidebar } from "./dashboard-sidebar"
 import { DashboardSkeleton } from "./dashboard-skeleton"
 import { DashboardTopbar } from "./dashboard-topbar"
@@ -32,6 +34,7 @@ export function DashboardShell({ children }: DashboardShellProps) {
   useEffect(() => {
     // Guests are redirected only after the identity has finished resolving.
     if (isUnauthenticated) {
+      clearExpressToken()
       router.replace("/sign-in")
       return
     }
