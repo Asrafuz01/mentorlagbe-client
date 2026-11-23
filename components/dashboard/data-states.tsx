@@ -69,14 +69,18 @@ export function DataError({
   onRetry,
 }: {
   message: string
-  onRetry?: () => void
+  onRetry?: () => void | Promise<void>
 }) {
   const [retrying, setRetrying] = useState(false)
 
-  function handleRetry() {
+  async function handleRetry() {
     if (retrying || !onRetry) return
     setRetrying(true)
-    onRetry()
+    try {
+      await onRetry()
+    } finally {
+      setRetrying(false)
+    }
   }
 
   return (

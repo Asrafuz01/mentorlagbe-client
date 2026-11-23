@@ -29,7 +29,7 @@ import type { Application, Tuition } from "@/types"
 export default function TutorOverviewPage() {
   const { user } = useDashboardIdentity()
   const tuitions = useDashboardCollection<Tuition>(
-    "/api/tuitions?mine=true",
+    "/api/tuitions?mine=true&limit=50",
     normalizeOwnTuition
   )
   const applicants = useDashboardCollection<Application>(

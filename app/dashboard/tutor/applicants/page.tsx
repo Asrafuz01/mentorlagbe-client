@@ -39,7 +39,7 @@ export default function TutorApplicantsPage() {
     normalizeApplication
   )
   const tuitions = useDashboardCollection<Tuition>(
-    "/api/tuitions?mine=true",
+    "/api/tuitions?mine=true&limit=50",
     normalizeOwnTuition
   )
   const [busyId, setBusyId] = useState<string | null>(null)

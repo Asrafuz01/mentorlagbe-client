@@ -1,12 +1,12 @@
 "use client"
 
 import { useEffect, useState, type ReactNode } from "react"
-import { useRouter } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
 
 import { DashboardSidebar } from "./dashboard-sidebar"
 import { DashboardSkeleton } from "./dashboard-skeleton"
 import { DashboardTopbar } from "./dashboard-topbar"
-import { getDashboardRole } from "./nav-config"
+import { getDashboardHome, getDashboardRole } from "./nav-config"
 import { useDashboardIdentity } from "./use-dashboard-identity"
 
 export type DashboardShellProps = {
@@ -15,20 +15,36 @@ export type DashboardShellProps = {
 
 export function DashboardShell({ children }: DashboardShellProps) {
   const router = useRouter()
+  const pathname = usePathname()
   const { user, isPending, isUnauthenticated } = useDashboardIdentity()
   const [collapsed, setCollapsed] = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
+  const role = getDashboardRole(user?.role)
+  const requestedRole = pathname.startsWith("/dashboard/admin")
+    ? "admin"
+    : pathname.startsWith("/dashboard/tutor")
+      ? "tutor"
+      : pathname.startsWith("/dashboard/student")
+        ? "student"
+        : null
+  const wrongRoleSection = requestedRole !== null && requestedRole !== role
 
   useEffect(() => {
     // Guests are redirected only after the identity has finished resolving.
-    if (isUnauthenticated) router.replace("/sign-in")
-  }, [isUnauthenticated, router])
+    if (isUnauthenticated) {
+      router.replace("/sign-in")
+      return
+    }
+    // Server routes remain the real guard; this avoids flashing another
+    // role's empty shell when a URL is typed directly.
+    if (!isPending && user && wrongRoleSection) {
+      router.replace(getDashboardHome(role))
+    }
+  }, [isUnauthenticated, isPending, role, router, user, wrongRoleSection])
 
   // CRITICAL: while the profile-backed identity resolves (including a hard
   // reload), keep the skeleton on screen. Redirecting here would bounce users.
-  if (isPending || !user) return <DashboardSkeleton />
-
-  const role = getDashboardRole(user.role)
+  if (isPending || !user || wrongRoleSection) return <DashboardSkeleton />
 
   return (
     <div className="flex min-h-svh bg-muted/20">

@@ -87,7 +87,7 @@ function PostTuitionForm({
   const [submitting, setSubmitting] = useState(false)
 
   const tuitions = useDashboardCollection<Tuition>(
-    "/api/tuitions?mine=true",
+    "/api/tuitions?mine=true&limit=50",
     normalizeOwnTuition
   )
   const isPro = user.plan !== "free"
@@ -97,9 +97,8 @@ function PostTuitionForm({
   const atFreeLimit = !isPro && !tuitions.loading && tuitionCount >= 2
 
   useEffect(() => {
-    const objectUrl = previewRef.current
     return () => {
-      if (objectUrl) URL.revokeObjectURL(objectUrl)
+      if (previewRef.current) URL.revokeObjectURL(previewRef.current)
     }
   }, [])
 

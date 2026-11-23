@@ -71,7 +71,7 @@ function toEditForm(tuition: Tuition): EditForm {
 export default function MyTuitionsPage() {
   const { user } = useDashboardIdentity()
   const tuitions = useDashboardCollection<Tuition>(
-    "/api/tuitions?mine=true",
+    "/api/tuitions?mine=true&limit=50",
     normalizeOwnTuition
   )
   const [busyId, setBusyId] = useState<string | null>(null)
