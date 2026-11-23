@@ -9,14 +9,17 @@ import { cn } from "@/lib/utils"
 /** Keeps raw errors in development without exposing internals in production. */
 function getErrorMessage(error: unknown): string {
   if (process.env.NODE_ENV === "development") {
-    if (error instanceof Error && error.message.trim()) return error.message
+    if (error && typeof error === "object" && "message" in error) {
+      const message = (error as { message?: unknown }).message
+      if (typeof message === "string" && message.trim()) return message
+    }
     if (typeof error === "string" && error.trim()) return error
   }
   return "The page hit an unexpected error. Refresh or try again."
 }
 
 export type ErrorBoundaryProps = {
-  error: unknown
+  error: Error & { digest?: string }
   /** Next.js 16 recovery callback that re-renders the route segment. */
   retry: () => void
   /** Legacy/alternate recovery callback supplied by some Next.js versions. */

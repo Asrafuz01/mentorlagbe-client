@@ -107,7 +107,7 @@ export function UserMenu({ user, stacked = false, onNavigate }: UserMenuProps) {
     try {
       clearExpressToken()
       await authClient.signOut()
-      clearAuthIdentityCache(user.email)
+      clearAuthIdentityCache(user.email ?? undefined)
       toast.success("Signed out successfully.")
       onNavigate?.()
       router.replace(AUTH_PATHS.home)

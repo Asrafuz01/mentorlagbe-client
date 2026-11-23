@@ -48,13 +48,14 @@ export function PaymentVerificationStatus({
   useEffect(() => {
     if (!sessionId) return
 
+    const sessionIdValue = sessionId
     let active = true
     const controller = new AbortController()
 
     async function verifyPayment() {
       try {
         const response = await authenticatedFetch(
-          `${API_BASE_URL}/api/payments/verify?session_id=${encodeURIComponent(sessionId)}`,
+          `${API_BASE_URL}/api/payments/verify?session_id=${encodeURIComponent(sessionIdValue)}`,
           { cache: "no-store", signal: controller.signal }
         )
         if (!active) return
