@@ -21,16 +21,16 @@ function ThemeProvider({
   )
 }
 
-function isTypingTarget(target: EventTarget | null) {
+function isInteractiveTarget(target: EventTarget | null) {
   if (!(target instanceof HTMLElement)) {
     return false
   }
 
-  return (
+  return Boolean(
     target.isContentEditable ||
-    target.tagName === "INPUT" ||
-    target.tagName === "TEXTAREA" ||
-    target.tagName === "SELECT"
+      target.closest(
+        'input, textarea, select, button, a, [role="dialog"], [role="alertdialog"], [aria-modal="true"]'
+      )
   )
 }
 
@@ -51,7 +51,7 @@ function ThemeHotkey() {
         return
       }
 
-      if (isTypingTarget(event.target)) {
+      if (isInteractiveTarget(event.target)) {
         return
       }
 

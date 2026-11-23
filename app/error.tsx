@@ -6,11 +6,13 @@ import { House, RotateCcw, TriangleExclamationPoint } from "lucide-react"
 import { buttonVariants } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 
-/** Reads a display-safe message from any thrown value without leaking details. */
+/** Keeps raw errors in development without exposing internals in production. */
 function getErrorMessage(error: unknown): string {
-  if (error instanceof Error && error.message.trim()) return error.message
-  if (typeof error === "string" && error.trim()) return error
-  return "An unexpected error interrupted this page."
+  if (process.env.NODE_ENV === "development") {
+    if (error instanceof Error && error.message.trim()) return error.message
+    if (typeof error === "string" && error.trim()) return error
+  }
+  return "The page hit an unexpected error. Refresh or try again."
 }
 
 export type ErrorBoundaryProps = {

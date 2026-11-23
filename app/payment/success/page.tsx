@@ -48,9 +48,12 @@ export default async function PaymentSuccessPage({
     ? await verifyPayment(sessionId)
     : null
 
+  const isConfirmed = Boolean(verification?.checked && verification.confirmed)
+  const needsAttention = verification !== null && !isConfirmed
+
   const note = !verification
     ? "Your checkout session is being finalised. You can safely close this page."
-    : verification.checked && verification.confirmed
+    : isConfirmed
       ? "Your payment has been confirmed and synced to your account."
       : verification.checked
         ? "We couldn't confirm the payment automatically. Your provider will email you a receipt shortly."
@@ -61,15 +64,27 @@ export default async function PaymentSuccessPage({
       <Navbar />
       <main className="flex flex-1 items-center justify-center bg-muted/20 px-4 py-14 sm:px-6">
         <div className="w-full max-w-lg rounded-2xl border border-border bg-card p-7 text-center shadow-sm sm:p-10">
-          <span className="mx-auto grid size-16 place-items-center rounded-full bg-primary/10 text-primary">
-            <CircleCheck className="size-9" aria-hidden="true" />
+          <span
+            className={cn(
+              "mx-auto grid size-16 place-items-center rounded-full",
+              needsAttention
+                ? "bg-muted text-muted-foreground"
+                : "bg-primary/10 text-primary"
+            )}
+          >
+            {needsAttention ? (
+              <Info className="size-9" aria-hidden="true" />
+            ) : (
+              <CircleCheck className="size-9" aria-hidden="true" />
+            )}
           </span>
           <h1 className="mt-6 text-2xl font-semibold tracking-tight sm:text-3xl">
-            Payment successful
+            {needsAttention ? "Payment submitted" : "Payment successful"}
           </h1>
           <p className="mt-3 text-sm leading-relaxed text-muted-foreground sm:text-base">
-            Thank you for upgrading your MentorLagbe experience. Your Pro
-            benefits are on the way.
+            {needsAttention
+              ? "Your checkout may still be finalising. Check your dashboard shortly to confirm your Pro benefits."
+              : "Thank you for upgrading your MentorLagbe experience. Your Pro benefits are on the way."}
           </p>
 
           <div className="mt-6 flex items-start gap-2.5 rounded-xl border border-border bg-muted/50 p-3 text-left">
