@@ -20,9 +20,21 @@ let tokenGeneration = 0
 
 const FALLBACK_TOKEN_TTL_MS = 6 * 24 * 60 * 60 * 1000
 const EXPIRY_SKEW_MS = 60 * 1000
+const VALID_ROLES = new Set(["student", "tutor", "admin"])
+const VALID_PLANS = new Set(["free", "pro", "student-pro", "tutor-pro"])
 
 function readText(value: unknown): string {
   return typeof value === "string" ? value.trim() : ""
+}
+
+function readRole(value: unknown): string {
+  const role = readText(value).toLowerCase()
+  return VALID_ROLES.has(role) ? role : ""
+}
+
+function readPlan(value: unknown): string {
+  const plan = readText(value).toLowerCase()
+  return VALID_PLANS.has(plan) ? plan : ""
 }
 
 function readSessionUser(result: unknown): SessionUser | null {
@@ -87,6 +99,10 @@ export async function getExpressToken(
       return null
     }
 
+    const role = readRole(user.role)
+    const plan = readPlan(user.plan)
+    const image = readText(user.image)
+
     const response = await fetch(`${API_BASE_URL}/api/auth/jwt`, {
       method: "POST",
       credentials: "include",
@@ -94,9 +110,9 @@ export async function getExpressToken(
       body: JSON.stringify({
         email,
         name: readText(user.name) || email.split("@")[0],
-        role: readText(user.role) || "student",
-        plan: readText(user.plan) || "free",
-        image: readText(user.image) || null,
+        ...(role ? { role } : {}),
+        ...(plan ? { plan } : {}),
+        ...(image ? { image } : {}),
       }),
     })
 
