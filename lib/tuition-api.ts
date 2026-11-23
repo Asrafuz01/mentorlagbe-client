@@ -1,8 +1,7 @@
+import { API_BASE_URL } from "@/lib/api"
 import type { Tuition } from "@/types"
 
-export const TUITION_API_URL = (
-  process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"
-).replace(/\/+$/, "")
+export const TUITION_API_URL = API_BASE_URL
 
 export function asString(value: unknown, fallback = ""): string {
   return typeof value === "string" ? value : fallback

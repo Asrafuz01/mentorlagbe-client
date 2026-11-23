@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, type FormEvent } from "react"
+import { useEffect, useRef, useState, type FormEvent } from "react"
 import { useRouter } from "next/navigation"
 import { RotateCcw, Search } from "lucide-react"
 
@@ -28,6 +28,7 @@ export function TuitionFilters({ filters }: TuitionFiltersProps) {
   const router = useRouter()
   const [search, setSearch] = useState(filters.search)
   const [syncedSearch, setSyncedSearch] = useState(filters.search)
+  const pendingFiltersRef = useRef(filters)
   const hasFilters = Object.values(filters).some(Boolean)
 
   // Keep the draft input aligned when navigation changes the committed filter.
@@ -36,8 +37,19 @@ export function TuitionFilters({ filters }: TuitionFiltersProps) {
     setSearch(filters.search)
   }
 
+  useEffect(() => {
+    pendingFiltersRef.current = filters
+  }, [filters])
+
   function update(next: Partial<TuitionFilters>) {
-    router.push(buildTuitionsHref({ ...filters, ...next }))
+    // Carry the unsubmitted search draft and any rapid successive changes.
+    const nextFilters = {
+      ...pendingFiltersRef.current,
+      search: search.trim(),
+      ...next,
+    }
+    pendingFiltersRef.current = nextFilters
+    router.push(buildTuitionsHref(nextFilters))
   }
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -47,6 +59,7 @@ export function TuitionFilters({ filters }: TuitionFiltersProps) {
 
   function handleReset() {
     setSearch("")
+    pendingFiltersRef.current = EMPTY_FILTERS
     router.push(buildTuitionsHref(EMPTY_FILTERS))
   }
 

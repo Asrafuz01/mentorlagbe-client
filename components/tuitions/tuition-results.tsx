@@ -4,18 +4,13 @@ import { Inbox } from "lucide-react"
 import { TuitionCard } from "@/components/shared/tuition-card"
 import type { Tuition } from "@/types"
 
-import {
-  buildTuitionsHref,
-  EMPTY_FILTERS,
-  type TuitionFilters,
-} from "./tuition-query"
+import { buildTuitionsHref, EMPTY_FILTERS } from "./tuition-query"
 
 export type TuitionResultsProps = {
   tuitions: Tuition[]
-  filters: TuitionFilters
 }
 
-export function TuitionResults({ tuitions, filters }: TuitionResultsProps) {
+export function TuitionResults({ tuitions }: TuitionResultsProps) {
   if (tuitions.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-border bg-card px-6 py-16 text-center">

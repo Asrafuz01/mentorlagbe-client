@@ -5,7 +5,6 @@ import { ArrowRight, Inbox, Sparkles } from "lucide-react"
 import { TuitionCard } from "@/components/shared/tuition-card"
 import { getFeaturedTuitions } from "@/lib/tuition-api"
 import { cn } from "@/lib/utils"
-import type { Tuition } from "@/types"
 
 import {
   SECONDARY_CTA_CLASS,

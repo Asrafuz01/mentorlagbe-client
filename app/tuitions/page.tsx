@@ -47,7 +47,10 @@ export default async function TuitionsPage({
       ? Math.floor(requestedPage)
       : 1
 
-  const result = await getTuitions({ ...filters, page })
+  let result = await getTuitions({ ...filters, page })
+  if (result.totalPages > 0 && result.page > result.totalPages) {
+    result = await getTuitions({ ...filters, page: result.totalPages })
+  }
 
   return (
     <div className="flex min-h-svh flex-col">
@@ -82,7 +85,7 @@ export default async function TuitionsPage({
           </div>
 
           <div className="mt-4">
-            <TuitionResults tuitions={result.items} filters={filters} />
+            <TuitionResults tuitions={result.items} />
           </div>
 
           <TuitionPagination
