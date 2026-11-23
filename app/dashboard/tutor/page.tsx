@@ -19,17 +19,15 @@ import {
   isOwnRecord,
   normalizeApplication,
   normalizeOwnTuition,
-  toDashboardUser,
   useDashboardCollection,
+  useDashboardIdentity,
 } from "@/components/dashboard"
 import { buttonVariants } from "@/components/ui/button"
-import { useSession } from "@/lib/auth-client"
 import { cn } from "@/lib/utils"
 import type { Application, Tuition } from "@/types"
 
 export default function TutorOverviewPage() {
-  const { data: session } = useSession()
-  const user = toDashboardUser(session?.user)
+  const { user } = useDashboardIdentity()
   const tuitions = useDashboardCollection<Tuition>(
     "/api/tuitions?mine=true",
     normalizeOwnTuition

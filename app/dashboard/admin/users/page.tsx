@@ -14,10 +14,9 @@ import {
   formatDate,
   normalizeUser,
   sendMutation,
-  toDashboardUser,
   useDashboardCollection,
+  useDashboardIdentity,
 } from "@/components/dashboard"
-import { useSession } from "@/lib/auth-client"
 import { cn } from "@/lib/utils"
 import type { User, UserRole } from "@/types"
 
@@ -26,8 +25,7 @@ const SELECT_CLASS =
   "h-9 rounded-lg border border-input bg-background px-2 text-xs font-medium capitalize outline-none focus-visible:ring-3 focus-visible:ring-ring/30 disabled:opacity-50"
 
 export default function AdminUsersPage() {
-  const { data: session } = useSession()
-  const currentUser = toDashboardUser(session?.user)
+  const { user: currentUser } = useDashboardIdentity()
   const users = useDashboardCollection<User>("/api/admin/users", normalizeUser)
   const [query, setQuery] = useState("")
   const [busyId, setBusyId] = useState<string | null>(null)

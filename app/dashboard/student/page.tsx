@@ -18,18 +18,16 @@ import {
   DataError,
   getPlanLabel,
   isOwnRecord,
-  toDashboardUser,
   useDashboardCollection,
+  useDashboardIdentity,
 } from "@/components/dashboard"
-import { useSession } from "@/lib/auth-client"
 import { normalizeApplication } from "@/lib/dashboard-api"
 import type { Application } from "@/types"
 
 const STAT_CLASS = "min-h-32"
 
 export default function StudentOverviewPage() {
-  const { data: session } = useSession()
-  const user = toDashboardUser(session?.user)
+  const { user } = useDashboardIdentity()
   const applications = useDashboardCollection<Application>(
     "/api/applications",
     normalizeApplication

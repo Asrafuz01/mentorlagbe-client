@@ -25,8 +25,8 @@ import {
   normalizeOwnTuition,
   sendMutation,
   StatusBadge,
-  toDashboardUser,
   useDashboardCollection,
+  useDashboardIdentity,
 } from "@/components/dashboard"
 import {
   CLASS_LEVEL_OPTIONS,
@@ -34,7 +34,6 @@ import {
   SUBJECT_OPTIONS,
 } from "@/components/tuitions"
 import { Button, buttonVariants } from "@/components/ui/button"
-import { useSession } from "@/lib/auth-client"
 import { formatMoney } from "@/lib/dashboard-format"
 import { cn } from "@/lib/utils"
 import type { Tuition } from "@/types"
@@ -70,8 +69,7 @@ function toEditForm(tuition: Tuition): EditForm {
 }
 
 export default function MyTuitionsPage() {
-  const { data: session } = useSession()
-  const user = toDashboardUser(session?.user)
+  const { user } = useDashboardIdentity()
   const tuitions = useDashboardCollection<Tuition>(
     "/api/tuitions?mine=true",
     normalizeOwnTuition

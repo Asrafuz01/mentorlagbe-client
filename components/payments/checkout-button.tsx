@@ -6,8 +6,8 @@ import { LoaderCircle } from "lucide-react"
 import { toast } from "sonner"
 
 import { Button } from "@/components/ui/button"
-import { useSession } from "@/lib/auth-client"
 import { API_BASE_URL } from "@/lib/api"
+import { useAuthIdentity } from "@/lib/auth-identity"
 import { authenticatedFetch } from "@/lib/express-auth"
 
 export type ProPlan = "student-pro" | "tutor-pro"
@@ -54,13 +54,13 @@ export function CheckoutButton({
   className,
 }: CheckoutButtonProps) {
   const router = useRouter()
-  const { data: session, isPending } = useSession()
+  const { identity, isPending } = useAuthIdentity()
   const [isLoading, setIsLoading] = useState(false)
 
   async function handleClick() {
     if (isLoading || isPending) return
 
-    if (!session?.user) {
+    if (!identity) {
       toast.error("Sign in to subscribe to a Pro plan.")
       router.push(
         `/sign-in?redirect=${encodeURIComponent(`/pricing?plan=${plan}`)}`
@@ -77,9 +77,9 @@ export function CheckoutButton({
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             plan,
-            userEmail: session.user.email ?? "",
-            userName: session.user.name ?? "",
-            userRole: session.user.role ?? "student",
+            userEmail: identity.email,
+            userName: identity.name,
+            userRole: identity.role || "student",
           }),
         }
       )

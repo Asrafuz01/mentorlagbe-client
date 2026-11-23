@@ -1,26 +1,15 @@
 "use client"
 
-import { useSession } from "@/lib/auth-client"
+import { useAuthIdentity } from "@/lib/auth-identity"
 
 import { toNavbarUser, type NavbarSession } from "./session-utils"
 
-/**
- * The auth client shape we rely on. Casting through `unknown` keeps this hook
- * compatible with both the current (better-auth) hook and a future provider.
- */
-type SessionLike = {
-  data?: { user?: unknown } | null
-  isPending?: boolean
-  isLoading?: boolean
-}
-
 export function useNavbarSession(): NavbarSession {
-  const session = useSession() as unknown as SessionLike
-  const isLoading = session.isPending ?? session.isLoading ?? false
+  const { identity, isPending } = useAuthIdentity()
 
-  if (isLoading) return { status: "loading", user: null }
+  if (isPending) return { status: "loading", user: null }
 
-  const user = toNavbarUser(session.data?.user)
+  const user = toNavbarUser(identity)
   return user
     ? { status: "authenticated", user }
     : { status: "unauthenticated", user: null }

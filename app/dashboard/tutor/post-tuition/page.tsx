@@ -27,8 +27,9 @@ import {
   isOwnRecord,
   normalizeOwnTuition,
   sendMutation,
-  toDashboardUser,
   useDashboardCollection,
+  useDashboardIdentity,
+  type DashboardUser,
 } from "@/components/dashboard"
 import {
   CLASS_LEVEL_OPTIONS,
@@ -36,7 +37,6 @@ import {
   SUBJECT_OPTIONS,
 } from "@/components/tuitions"
 import { Button } from "@/components/ui/button"
-import { useSession } from "@/lib/auth-client"
 import { uploadImageToImgBB } from "@/lib/imgbb"
 import { cn } from "@/lib/utils"
 import type { Tuition } from "@/types"
@@ -70,15 +70,14 @@ const INITIAL_FORM: TuitionForm = {
 }
 
 export default function PostTuitionPage() {
-  const { data: session } = useSession()
-  const user = toDashboardUser(session?.user)
+  const { user } = useDashboardIdentity()
   return user ? <PostTuitionForm user={user} /> : <DashboardSkeleton />
 }
 
 function PostTuitionForm({
   user,
 }: {
-  user: NonNullable<ReturnType<typeof toDashboardUser>>
+  user: DashboardUser
 }) {
   const router = useRouter()
   const [form, setForm] = useState<TuitionForm>(INITIAL_FORM)

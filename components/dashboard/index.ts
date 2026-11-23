@@ -35,6 +35,10 @@ export {
   type DashboardCollectionState,
 } from "./use-dashboard-collection"
 export {
+  useDashboardIdentity,
+  type DashboardIdentityState,
+} from "./use-dashboard-identity"
+export {
   getErrorMessage,
   isOwnRecord,
   normalizeApplication,

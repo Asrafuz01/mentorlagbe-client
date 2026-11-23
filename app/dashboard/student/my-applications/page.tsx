@@ -20,19 +20,17 @@ import {
   DataLoading,
   isOwnRecord,
   StatusBadge,
-  toDashboardUser,
   useDashboardCollection,
+  useDashboardIdentity,
 } from "@/components/dashboard"
 import { buttonVariants } from "@/components/ui/button"
-import { useSession } from "@/lib/auth-client"
 import { normalizeApplication, sendMutation } from "@/lib/dashboard-api"
 import { formatDate, formatMoney } from "@/lib/dashboard-format"
 import { cn } from "@/lib/utils"
 import type { Application } from "@/types"
 
 export default function MyApplicationsPage() {
-  const { data: session } = useSession()
-  const user = toDashboardUser(session?.user)
+  const { user } = useDashboardIdentity()
   const applications = useDashboardCollection<Application>(
     "/api/applications",
     normalizeApplication

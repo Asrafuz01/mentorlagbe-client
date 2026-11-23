@@ -17,6 +17,7 @@ type CachedToken = {
 let tokenCache: CachedToken | null = null
 let tokenRequest: Promise<string | null> | null = null
 let tokenGeneration = 0
+let signupHint: { email: string; role: string; plan: string } | null = null
 
 const FALLBACK_TOKEN_TTL_MS = 6 * 24 * 60 * 60 * 1000
 const EXPIRY_SKEW_MS = 60 * 1000
@@ -66,11 +67,37 @@ function getTokenExpiry(token: string): number {
   return Date.now() + FALLBACK_TOKEN_TTL_MS
 }
 
-/** Clears the cached Express JWT when the BetterAuth session ends. */
-export function clearExpressToken() {
+function resetTokenCache() {
   tokenGeneration += 1
   tokenCache = null
   tokenRequest = null
+}
+
+/** Clears the cached Express JWT when the BetterAuth session ends. */
+export function clearExpressToken() {
+  resetTokenCache()
+  signupHint = null
+}
+
+/**
+ * Carries the role chosen at signup into the first Express JWT exchange.
+ * BetterAuth may omit custom fields from the session, so this prevents the
+ * server from creating the Express profile with its default student role.
+ */
+export function setSignupRoleHint(input: {
+  email: string
+  role: string
+  plan?: string
+}) {
+  const email = readText(input.email).toLowerCase()
+  const role = readRole(input.role)
+  if (!email || !role) return
+
+  signupHint = {
+    email,
+    role,
+    plan: readPlan(input.plan) || "free",
+  }
 }
 
 /**
@@ -95,12 +122,13 @@ export async function getExpressToken(
     const user = readSessionUser(await authClient.getSession())
     const email = readText(user?.email).toLowerCase()
     if (!user || !email) {
-      clearExpressToken()
+      resetTokenCache()
       return null
     }
 
-    const role = readRole(user.role)
-    const plan = readPlan(user.plan)
+    const hint = signupHint?.email === email ? signupHint : null
+    const role = readRole(user.role) || hint?.role || ""
+    const plan = readPlan(user.plan) || hint?.plan || ""
     const image = readText(user.image)
 
     const response = await fetch(`${API_BASE_URL}/api/auth/jwt`, {
@@ -117,7 +145,7 @@ export async function getExpressToken(
     })
 
     if (!response.ok) {
-      clearExpressToken()
+      resetTokenCache()
       return null
     }
 
@@ -128,10 +156,11 @@ export async function getExpressToken(
         : ""
 
     if (!token) {
-      clearExpressToken()
+      resetTokenCache()
       return null
     }
 
+    if (signupHint?.email === email) signupHint = null
     if (generation === tokenGeneration) {
       tokenCache = { token, expiresAt: getTokenExpiry(token) }
     }

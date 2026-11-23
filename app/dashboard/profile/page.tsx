@@ -21,13 +21,13 @@ import { toast } from "sonner"
 
 import {
   DashboardSkeleton,
-  toDashboardUser,
+  useDashboardIdentity,
   type DashboardUser,
 } from "@/components/dashboard"
 import { getAvatarSrc } from "@/components/navbar/session-utils"
 import { Button } from "@/components/ui/button"
 import { API_BASE_URL } from "@/lib/api"
-import { authClient, useSession } from "@/lib/auth-client"
+import { authClient } from "@/lib/auth-client"
 import { authenticatedFetch, clearExpressToken } from "@/lib/express-auth"
 import { uploadImageToImgBB } from "@/lib/imgbb"
 import { cn } from "@/lib/utils"
@@ -475,8 +475,7 @@ function ProfileFields({ user }: { user: DashboardUser }) {
 }
 
 export default function UpdateProfilePage() {
-  const { data: session, isPending } = useSession()
-  const user = toDashboardUser(session?.user)
+  const { user, isPending } = useDashboardIdentity()
 
   if (isPending || !user) return <DashboardSkeleton />
   return <ProfileFields user={user} />

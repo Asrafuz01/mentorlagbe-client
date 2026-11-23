@@ -3,13 +3,11 @@
 import { useEffect, useState, type ReactNode } from "react"
 import { useRouter } from "next/navigation"
 
-import { useSession } from "@/lib/auth-client"
-
 import { DashboardSidebar } from "./dashboard-sidebar"
 import { DashboardSkeleton } from "./dashboard-skeleton"
 import { DashboardTopbar } from "./dashboard-topbar"
-import { toDashboardUser } from "./dashboard-user"
 import { getDashboardRole } from "./nav-config"
+import { useDashboardIdentity } from "./use-dashboard-identity"
 
 export type DashboardShellProps = {
   children: ReactNode
@@ -17,22 +15,18 @@ export type DashboardShellProps = {
 
 export function DashboardShell({ children }: DashboardShellProps) {
   const router = useRouter()
-  const { data: session, isPending } = useSession()
+  const { user, isPending, isUnauthenticated } = useDashboardIdentity()
   const [collapsed, setCollapsed] = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
 
-  const rawUser = session?.user
-  const user = toDashboardUser(rawUser)
-  const isUnauthenticated = !isPending && !rawUser
-
   useEffect(() => {
-    // Guests are redirected only after the session has finished loading.
+    // Guests are redirected only after the identity has finished resolving.
     if (isUnauthenticated) router.replace("/sign-in")
   }, [isUnauthenticated, router])
 
-  // CRITICAL: while the session resolves (including a hard reload), keep the
-  // skeleton on screen. Redirecting here would bounce authenticated users.
-  if (isPending || !rawUser || !user) return <DashboardSkeleton />
+  // CRITICAL: while the profile-backed identity resolves (including a hard
+  // reload), keep the skeleton on screen. Redirecting here would bounce users.
+  if (isPending || !user) return <DashboardSkeleton />
 
   const role = getDashboardRole(user.role)
 

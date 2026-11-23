@@ -25,17 +25,15 @@ import {
   normalizeOwnTuition,
   sendMutation,
   StatusBadge,
-  toDashboardUser,
   useDashboardCollection,
+  useDashboardIdentity,
 } from "@/components/dashboard"
 import { Button } from "@/components/ui/button"
-import { useSession } from "@/lib/auth-client"
 import { formatDate } from "@/lib/dashboard-format"
 import type { Application, Tuition } from "@/types"
 
 export default function TutorApplicantsPage() {
-  const { data: session } = useSession()
-  const user = toDashboardUser(session?.user)
+  const { user } = useDashboardIdentity()
   const applications = useDashboardCollection<Application>(
     "/api/applications",
     normalizeApplication
