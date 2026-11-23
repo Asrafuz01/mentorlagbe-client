@@ -48,9 +48,13 @@ const ROLE_OPTIONS: readonly {
 
 export type SignUpFormProps = {
   initialRole?: Role
+  redirectTo?: string
 }
 
-export function SignUpForm({ initialRole = "student" }: SignUpFormProps) {
+export function SignUpForm({
+  initialRole = "student",
+  redirectTo = AUTH_PATHS.dashboard,
+}: SignUpFormProps) {
   const router = useRouter()
   const [name, setName] = useState("")
   const [email, setEmail] = useState("")
@@ -78,6 +82,11 @@ export function SignUpForm({ initialRole = "student" }: SignUpFormProps) {
     const normalizedEmail = email.trim().toLowerCase()
     setIsSubmitting(true)
     try {
+      // Set the hint before signing up: session observers can trigger the
+      // Express JWT exchange as soon as BetterAuth reports the new account.
+      clearExpressToken()
+      setSignupRoleHint({ email: normalizedEmail, role, plan: "free" })
+
       const result = await authClient.signUp.email({
         name: name.trim(),
         email: normalizedEmail,
@@ -87,14 +96,13 @@ export function SignUpForm({ initialRole = "student" }: SignUpFormProps) {
       })
 
       if (result.error) {
+        clearExpressToken()
         toast.error(result.error.message || "Could not create your account.")
         return
       }
 
-      clearExpressToken()
-      setSignupRoleHint({ email: normalizedEmail, role, plan: "free" })
       toast.success("Account created. Welcome to MentorLagbe!")
-      router.replace(AUTH_PATHS.dashboard)
+      router.replace(redirectTo)
       router.refresh()
     } catch (error) {
       toast.error(

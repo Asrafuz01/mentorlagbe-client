@@ -2,6 +2,7 @@
 
 import { useState, type FormEvent } from "react"
 import Link from "next/link"
+import { usePathname } from "next/navigation"
 import {
   BadgeCheck,
   CheckCircle2,
@@ -28,6 +29,7 @@ export type ApplyPanelProps = {
 }
 
 export function ApplyPanel({ tuitionId, tuitionTitle }: ApplyPanelProps) {
+  const pathname = usePathname()
   const { identity: user, isPending } = useAuthIdentity()
   const [studentPhone, setStudentPhone] = useState("")
   const [preferredSchedule, setPreferredSchedule] = useState("")
@@ -66,7 +68,7 @@ export function ApplyPanel({ tuitionId, tuitionTitle }: ApplyPanelProps) {
           the tutor.
         </p>
         <Link
-          href={AUTH_PATHS.signIn}
+          href={`${AUTH_PATHS.signIn}?redirect=${encodeURIComponent(pathname)}`}
           className={cn(
             "mt-5 flex h-11 w-full items-center justify-center text-sm",
             "rounded-lg bg-primary px-4 font-medium text-primary-foreground transition-colors hover:bg-primary/80"
@@ -77,7 +79,7 @@ export function ApplyPanel({ tuitionId, tuitionTitle }: ApplyPanelProps) {
         <p className="mt-3 text-center text-xs text-muted-foreground">
           No account yet?{" "}
           <Link
-            href={`${AUTH_PATHS.signUp}?role=student`}
+            href={`${AUTH_PATHS.signUp}?role=student&redirect=${encodeURIComponent(pathname)}`}
             className="font-medium text-primary hover:underline"
           >
             Create one
