@@ -1,6 +1,6 @@
 <!-- BEGIN:nextjs-agent-rules -->
 
-# This is NOT the Next.js you know
+## This is NOT the Next.js you know
 
 This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` (resolved from this file's directory; in monorepos the `next` package may not be visible from the repo root) before writing any code. Heed deprecation notices.
 
@@ -32,3 +32,4 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 - Dashboard: `app/dashboard/layout.tsx` shell with session-safe guard (never redirects while `isPending`), collapsible sidebar + mobile drawer, role nav, `DashboardStatCard`; `/dashboard` role redirect; `/dashboard/profile` with ImgBB upload (`lib/imgbb.ts`) + auth/backend sync.
 - ImgBB: `lib/imgbb.ts` `uploadImageToImgBB(file)` reuses `NEXT_PUBLIC_IMGBB_API_KEY` for profile and tutor tuition images.
 - Role dashboards: `app/dashboard/student/*` (overview + applications), `app/dashboard/tutor/*` (overview, post/CRUD tuitions, applicants), `app/dashboard/admin/*` (overview, users, tuition approvals, transactions). Shared defensive fetch/mutations in `lib/dashboard-api.ts`, formats in `lib/dashboard-format.ts`, and reusable states/headers/badges/hook in `components/dashboard/*`.
+- Audit fixes: profile fields reload from `/api/users/me`, stale JWTs are cleared after identity changes, checkout sign-in redirects are preserved, hidden tuitions are gated, student dashboards narrow their own applications, tutor lists use JWT-scoped queries, and active badges are styled distinctly.
