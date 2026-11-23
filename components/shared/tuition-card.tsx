@@ -75,10 +75,10 @@ export function TuitionCard({ tuition, className }: TuitionCardProps) {
             <ImageIcon className="size-10" aria-hidden="true" />
           </div>
         )}
-        <span className="absolute top-3 left-3 max-w-[calc(100%-1.5rem)] truncate rounded-full bg-background/90 px-2.5 py-1 text-xs font-semibold text-foreground shadow-sm backdrop-blur">
+        <span className="absolute top-3 left-3 max-w-[calc(100%-7rem)] truncate rounded-full bg-background/90 px-2.5 py-1 text-xs font-semibold text-foreground shadow-sm backdrop-blur">
           {tuition.subject}
         </span>
-        <span className="absolute top-3 right-3 inline-flex items-center gap-1 rounded-full bg-background/90 px-2.5 py-1 text-xs font-medium text-foreground shadow-sm backdrop-blur">
+        <span className="absolute top-3 right-3 inline-flex max-w-[6rem] items-center gap-1 truncate rounded-full bg-background/90 px-2.5 py-1 text-xs font-medium text-foreground shadow-sm backdrop-blur">
           <Video className="size-3" aria-hidden="true" />
           {tuition.mode}
         </span>

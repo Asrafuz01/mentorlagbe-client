@@ -5,6 +5,7 @@ import Image from "next/image"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { LayoutDashboard, LoaderCircle, LogOut, UserRound } from "lucide-react"
+import { toast } from "sonner"
 
 import { Button, buttonVariants } from "@/components/ui/button"
 import { authClient } from "@/lib/auth-client"
@@ -105,11 +106,14 @@ export function UserMenu({ user, stacked = false, onNavigate }: UserMenuProps) {
     try {
       clearExpressToken()
       await authClient.signOut()
+      toast.success("Signed out successfully.")
       onNavigate?.()
       router.replace(AUTH_PATHS.home)
       router.refresh()
     } catch (error) {
-      console.error("Failed to sign out", error)
+      toast.error(
+        error instanceof Error ? error.message : "Could not sign out."
+      )
     } finally {
       setIsSigningOut(false)
     }

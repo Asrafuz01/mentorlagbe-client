@@ -1,3 +1,6 @@
+"use client"
+
+import { useState } from "react"
 import Link from "next/link"
 import {
   Inbox,
@@ -68,6 +71,14 @@ export function DataError({
   message: string
   onRetry?: () => void
 }) {
+  const [retrying, setRetrying] = useState(false)
+
+  function handleRetry() {
+    if (retrying || !onRetry) return
+    setRetrying(true)
+    onRetry()
+  }
+
   return (
     <div role="alert" className={SHELL_CLASS}>
       <span className="grid size-12 place-items-center rounded-full bg-destructive/10 text-destructive">
@@ -80,14 +91,18 @@ export function DataError({
       {onRetry ? (
         <button
           type="button"
-          onClick={onRetry}
+          onClick={handleRetry}
+          disabled={retrying}
           className={cn(
             buttonVariants({ variant: "outline", size: "sm" }),
             "mt-5 h-9"
           )}
         >
-          <RotateCcw aria-hidden="true" />
-          Try Again
+          <RotateCcw
+            className={retrying ? "animate-spin" : undefined}
+            aria-hidden="true"
+          />
+          {retrying ? "Retrying…" : "Try Again"}
         </button>
       ) : null}
     </div>

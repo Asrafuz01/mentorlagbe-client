@@ -1,6 +1,6 @@
 "use client"
 
-import { useCallback, useEffect, useState } from "react"
+import { useCallback, useEffect, useRef, useState } from "react"
 
 import { getCollection } from "@/lib/dashboard-api"
 
@@ -21,8 +21,11 @@ export function useDashboardCollection<T>(
     loading: true,
   })
   const [reloadKey, setReloadKey] = useState(0)
+  const reloadingRef = useRef(false)
 
   const reload = useCallback(() => {
+    if (reloadingRef.current) return
+    reloadingRef.current = true
     setState((current) => ({ ...current, loading: true }))
     setReloadKey((key) => key + 1)
   }, [])
@@ -32,6 +35,7 @@ export function useDashboardCollection<T>(
     getCollection<T>(path, normalize).then((result) => {
       if (!active) return
       setState({ items: result.items, error: result.error, loading: false })
+      reloadingRef.current = false
     })
     return () => {
       active = false

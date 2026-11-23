@@ -58,6 +58,7 @@ function ProfileFields({ user }: { user: DashboardUser }) {
   const previewRef = useRef<string | null>(null)
   const [uploading, setUploading] = useState(false)
   const [submitting, setSubmitting] = useState(false)
+  const [profileLoadFailed, setProfileLoadFailed] = useState(false)
 
   useEffect(() => {
     const objectUrl = previewRef.current
@@ -75,10 +76,18 @@ function ProfileFields({ user }: { user: DashboardUser }) {
           `${API_BASE_URL}/api/users/me`,
           { cache: "no-store" }
         )
-        if (!response.ok) return
+        if (!response.ok) {
+          if (!cancelled) setProfileLoadFailed(true)
+          return
+        }
 
         const payload: unknown = await response.json().catch(() => null)
-        if (cancelled || !payload || typeof payload !== "object") return
+        if (cancelled) return
+        if (!payload || typeof payload !== "object") {
+          setProfileLoadFailed(true)
+          return
+        }
+        setProfileLoadFailed(false)
 
         const record = payload as Record<string, unknown>
         setForm((current) => ({
@@ -92,7 +101,8 @@ function ProfileFields({ user }: { user: DashboardUser }) {
               : current.image,
         }))
       } catch {
-        // Session values remain usable when the extended profile is unavailable.
+        // Keep session values, but block saving extended fields to avoid data loss.
+        if (!cancelled) setProfileLoadFailed(true)
       }
     }
 
@@ -117,7 +127,7 @@ function ProfileFields({ user }: { user: DashboardUser }) {
   async function handleFile(event: ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0]
     event.target.value = ""
-    if (!file) return
+    if (!file || uploading || submitting) return
     if (!file.type.startsWith("image/")) {
       toast.error("Please choose an image file.")
       return
@@ -151,7 +161,13 @@ function ProfileFields({ user }: { user: DashboardUser }) {
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
-    if (!user || submitting || uploading) return
+    if (submitting || uploading) return
+    if (profileLoadFailed) {
+      toast.error(
+        "Could not load your saved profile details. Refresh the page before saving."
+      )
+      return
+    }
 
     const name = form.name.trim()
     if (!name) {
@@ -278,7 +294,7 @@ function ProfileFields({ user }: { user: DashboardUser }) {
               type="file"
               accept="image/*"
               onChange={handleFile}
-              disabled={submitting}
+              disabled={uploading || submitting}
               className="sr-only"
             />
             <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
@@ -287,6 +303,7 @@ function ProfileFields({ user }: { user: DashboardUser }) {
             {previewUrl || form.image ? (
               <button
                 type="button"
+                disabled={uploading || submitting}
                 onClick={() => {
                   clearPreview()
                   update("image", "")

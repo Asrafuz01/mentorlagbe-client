@@ -23,6 +23,7 @@ import { Button } from "@/components/ui/button"
 import { signOut } from "@/lib/auth-client"
 import { clearExpressToken } from "@/lib/express-auth"
 import { cn } from "@/lib/utils"
+import { toast } from "sonner"
 
 import type { DashboardUser } from "./dashboard-user"
 
@@ -78,8 +79,13 @@ export function DashboardTopbar({
     try {
       clearExpressToken()
       await signOut()
+      toast.success("Signed out successfully.")
       router.replace("/")
       router.refresh()
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : "Could not sign out."
+      )
     } finally {
       setIsSigningOut(false)
     }

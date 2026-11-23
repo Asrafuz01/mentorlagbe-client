@@ -122,7 +122,7 @@ function PostTuitionForm({
   async function handleFile(event: ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0]
     event.target.value = ""
-    if (!file) return
+    if (!file || uploading || submitting) return
     if (!file.type.startsWith("image/")) {
       toast.error("Please choose an image file.")
       return
@@ -435,7 +435,7 @@ function PostTuitionForm({
               type="file"
               accept="image/*"
               onChange={handleFile}
-              disabled={submitting}
+              disabled={uploading || submitting}
               className="sr-only"
             />
             {form.bannerImage ? (
