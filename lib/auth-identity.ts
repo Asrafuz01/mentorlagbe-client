@@ -1,6 +1,6 @@
 "use client"
 
-import { useCallback, useSyncExternalStore } from "react"
+import { useCallback, useEffect, useSyncExternalStore } from "react"
 
 import { API_BASE_URL } from "@/lib/api"
 import { useSession } from "@/lib/auth-client"

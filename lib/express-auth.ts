@@ -1,4 +1,3 @@
-import { API_BASE_URL } from "@/lib/api"
 import { authClient } from "@/lib/auth-client"
 
 type SessionUser = {
@@ -131,7 +130,8 @@ export async function getExpressToken(
     const plan = readPlan(user.plan) || hint?.plan || ""
     const image = readText(user.image)
 
-    const response = await fetch(`${API_BASE_URL}/api/auth/jwt`, {
+    // Same-origin proxy avoids cross-port cookie issues in local dev.
+    const response = await fetch("/api/auth/jwt", {
       method: "POST",
       credentials: "include",
       headers: { "Content-Type": "application/json" },
