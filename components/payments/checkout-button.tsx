@@ -62,7 +62,9 @@ export function CheckoutButton({
 
     if (!session?.user) {
       toast.error("Sign in to subscribe to a Pro plan.")
-      router.push(`/sign-in?redirect=/pricing?plan=${plan}`)
+      router.push(
+        `/sign-in?redirect=${encodeURIComponent(`/pricing?plan=${plan}`)}`
+      )
       return
     }
 

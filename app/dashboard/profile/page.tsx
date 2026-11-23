@@ -28,7 +28,7 @@ import { getAvatarSrc } from "@/components/navbar/session-utils"
 import { Button } from "@/components/ui/button"
 import { API_BASE_URL } from "@/lib/api"
 import { authClient, useSession } from "@/lib/auth-client"
-import { authenticatedFetch } from "@/lib/express-auth"
+import { authenticatedFetch, clearExpressToken } from "@/lib/express-auth"
 import { uploadImageToImgBB } from "@/lib/imgbb"
 import { cn } from "@/lib/utils"
 
@@ -63,6 +63,42 @@ function ProfileFields({ user }: { user: DashboardUser }) {
     const objectUrl = previewRef.current
     return () => {
       if (objectUrl) URL.revokeObjectURL(objectUrl)
+    }
+  }, [])
+
+  useEffect(() => {
+    let cancelled = false
+
+    async function loadExtendedProfile() {
+      try {
+        const response = await authenticatedFetch(
+          `${API_BASE_URL}/api/users/me`,
+          { cache: "no-store" }
+        )
+        if (!response.ok) return
+
+        const payload: unknown = await response.json().catch(() => null)
+        if (cancelled || !payload || typeof payload !== "object") return
+
+        const record = payload as Record<string, unknown>
+        setForm((current) => ({
+          ...current,
+          phone:
+            typeof record.phone === "string" ? record.phone : current.phone,
+          bio: typeof record.bio === "string" ? record.bio : current.bio,
+          image:
+            typeof record.image === "string" && record.image
+              ? record.image
+              : current.image,
+        }))
+      } catch {
+        // Session values remain usable when the extended profile is unavailable.
+      }
+    }
+
+    void loadExtendedProfile()
+    return () => {
+      cancelled = true
     }
   }, [])
 
@@ -138,6 +174,8 @@ function ProfileFields({ user }: { user: DashboardUser }) {
         if (authError) {
           throw new Error(authError.message || "Could not update your account.")
         }
+        // The JWT carries the display name/image, so discard the stale copy.
+        clearExpressToken()
       }
 
       // Extended profile fields live on the Express users collection.

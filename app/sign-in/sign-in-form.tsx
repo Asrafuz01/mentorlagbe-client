@@ -11,6 +11,7 @@ import { validateEmail, validatePassword } from "@/components/auth/validation"
 import { AUTH_PATHS } from "@/components/navbar/nav-config"
 import { Button } from "@/components/ui/button"
 import { authClient } from "@/lib/auth-client"
+import { clearExpressToken } from "@/lib/express-auth"
 
 type FormErrors = {
   email?: string
@@ -43,7 +44,11 @@ function GoogleIcon() {
   )
 }
 
-export function SignInForm() {
+export function SignInForm({
+  redirectTo = AUTH_PATHS.dashboard,
+}: {
+  redirectTo?: string
+}) {
   const router = useRouter()
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
@@ -78,8 +83,9 @@ export function SignInForm() {
         return
       }
 
+      clearExpressToken()
       toast.success("Welcome back to MentorLagbe!")
-      router.replace(AUTH_PATHS.dashboard)
+      router.replace(redirectTo)
       router.refresh()
     } catch (error) {
       toast.error(
@@ -95,11 +101,12 @@ export function SignInForm() {
   const handleGoogleSignIn = async () => {
     if (isRedirecting || isSubmitting) return
     setIsRedirecting(true)
+    clearExpressToken()
 
     try {
       const result = await authClient.signIn.social({
         provider: "google",
-        callbackURL: AUTH_PATHS.dashboard,
+        callbackURL: redirectTo,
       })
 
       if (result.error) {

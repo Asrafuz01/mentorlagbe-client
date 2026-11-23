@@ -41,7 +41,6 @@ export function ApplyPanel({ tuitionId, tuitionTitle }: ApplyPanelProps) {
 
   const user = session?.user
   const role = (user?.role ?? "").trim().toLowerCase()
-  const isStudent = role === "student"
   const isRestrictedRole = role === "tutor" || role === "admin"
 
   if (isPending) {
@@ -89,7 +88,9 @@ export function ApplyPanel({ tuitionId, tuitionTitle }: ApplyPanelProps) {
     )
   }
 
-  if (isRestrictedRole || !isStudent) {
+  // Only hard-block known non-students; the API enforces the role when the
+  // session payload does not include one.
+  if (isRestrictedRole) {
     return (
       <div className="rounded-2xl border border-border bg-card p-6 shadow-sm">
         <span className="grid size-10 place-items-center rounded-xl bg-muted text-muted-foreground">

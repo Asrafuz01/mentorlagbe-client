@@ -15,6 +15,7 @@ import {
 import { AUTH_PATHS } from "@/components/navbar/nav-config"
 import { Button } from "@/components/ui/button"
 import { authClient } from "@/lib/auth-client"
+import { clearExpressToken } from "@/lib/express-auth"
 import { cn } from "@/lib/utils"
 
 type Role = "student" | "tutor"
@@ -89,6 +90,7 @@ export function SignUpForm({ initialRole = "student" }: SignUpFormProps) {
         return
       }
 
+      clearExpressToken()
       toast.success("Account created. Welcome to MentorLagbe!")
       router.replace(AUTH_PATHS.dashboard)
       router.refresh()
