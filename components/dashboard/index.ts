@@ -23,6 +23,7 @@ export {
   type DashboardPageHeaderProps,
 } from "./page-header"
 export { StatusBadge } from "./status-badge"
+export { ConfirmDialog, type ConfirmDialogProps } from "./confirm-dialog"
 export {
   DataEmpty,
   DataError,
