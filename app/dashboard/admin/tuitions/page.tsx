@@ -12,6 +12,7 @@ import {
 import { toast } from "sonner"
 
 import {
+  ConfirmDialog,
   DashboardPageHeader,
   DashboardSkeleton,
   DataEmpty,
@@ -42,6 +43,11 @@ export default function AdminTuitionsPage() {
   )
   const [filter, setFilter] = useState<ApprovalStatus | "all">("pending")
   const [busyId, setBusyId] = useState<string | null>(null)
+  const [pendingDecision, setPendingDecision] = useState<{
+    id: string
+    approvalStatus: ApprovalStatus
+  } | null>(null)
+  const anyBusy = busyId !== null
 
   async function handleDecision(id: string, approvalStatus: ApprovalStatus) {
     if (busyId) return
@@ -57,6 +63,7 @@ export default function AdminTuitionsPage() {
           ? "Tuition approved and published."
           : "Tuition rejected."
       )
+      setPendingDecision(null)
       tuitions.reload()
     } catch (error) {
       toast.error(
@@ -188,10 +195,15 @@ export default function AdminTuitionsPage() {
                       <Button
                         type="button"
                         size="sm"
-                        onClick={() => handleDecision(tuition._id, "approved")}
-                        disabled={busy || tuition.approvalStatus === "approved"}
+                        onClick={() =>
+                          setPendingDecision({
+                            id: tuition._id,
+                            approvalStatus: "approved",
+                          })
+                        }
+                        disabled={anyBusy || tuition.approvalStatus === "approved"}
                       >
-                        {busy ? (
+                        {busy && pendingDecision?.approvalStatus === "approved" ? (
                           <LoaderCircle
                             className="animate-spin"
                             aria-hidden="true"
@@ -205,10 +217,22 @@ export default function AdminTuitionsPage() {
                         type="button"
                         variant="destructive"
                         size="sm"
-                        onClick={() => handleDecision(tuition._id, "rejected")}
-                        disabled={busy || tuition.approvalStatus === "rejected"}
+                        onClick={() =>
+                          setPendingDecision({
+                            id: tuition._id,
+                            approvalStatus: "rejected",
+                          })
+                        }
+                        disabled={anyBusy || tuition.approvalStatus === "rejected"}
                       >
-                        <CircleX aria-hidden="true" />
+                        {busy && pendingDecision?.approvalStatus === "rejected" ? (
+                          <LoaderCircle
+                            className="animate-spin"
+                            aria-hidden="true"
+                          />
+                        ) : (
+                          <CircleX aria-hidden="true" />
+                        )}
                         Reject
                       </Button>
                     </div>
@@ -219,6 +243,35 @@ export default function AdminTuitionsPage() {
           </ul>
         )
       ) : null}
+
+      <ConfirmDialog
+        open={Boolean(pendingDecision)}
+        title={
+          pendingDecision?.approvalStatus === "rejected"
+            ? "Reject this tuition?"
+            : "Approve this tuition?"
+        }
+        description={
+          pendingDecision?.approvalStatus === "rejected"
+            ? "The listing will stay hidden and the tutor will see its rejected status."
+            : "The listing will be published and visible to students."
+        }
+        confirmLabel={
+          pendingDecision?.approvalStatus === "rejected"
+            ? "Reject tuition"
+            : "Approve tuition"
+        }
+        destructive={pendingDecision?.approvalStatus === "rejected"}
+        loading={Boolean(
+          pendingDecision && busyId === pendingDecision.id
+        )}
+        onConfirm={() => {
+          if (pendingDecision) {
+            void handleDecision(pendingDecision.id, pendingDecision.approvalStatus)
+          }
+        }}
+        onCancel={() => setPendingDecision(null)}
+      />
     </div>
   )
 }

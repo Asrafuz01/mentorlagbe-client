@@ -15,6 +15,7 @@ import {
 import { toast } from "sonner"
 
 import {
+  ConfirmDialog,
   DashboardPageHeader,
   DashboardSkeleton,
   DataEmpty,
@@ -76,14 +77,19 @@ export default function MyTuitionsPage() {
     normalizeOwnTuition
   )
   const [busyId, setBusyId] = useState<string | null>(null)
+  const [busyAction, setBusyAction] = useState<
+    "save" | "toggle" | "delete" | null
+  >(null)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [editForm, setEditForm] = useState<EditForm | null>(null)
+  const [pendingDelete, setPendingDelete] = useState<Tuition | null>(null)
 
   if (!user) return <DashboardSkeleton />
 
   const ownTuitions = tuitions.items.filter((item) =>
     isOwnRecord(item, user, "tutor")
   )
+  const anyBusy = busyId !== null
 
   function startEdit(tuition: Tuition) {
     setEditingId(tuition._id)
@@ -93,7 +99,18 @@ export default function MyTuitionsPage() {
   async function handleSave(event: FormEvent<HTMLFormElement>, id: string) {
     event.preventDefault()
     if (!editForm || busyId) return
+    if (
+      !editForm.title.trim() ||
+      !editForm.location.trim() ||
+      !editForm.description.trim() ||
+      Number(editForm.monthlyFee) <= 0 ||
+      Number(editForm.daysPerWeek) <= 0
+    ) {
+      toast.error("Enter a title, location, description, fee, and valid days.")
+      return
+    }
     setBusyId(id)
+    setBusyAction("save")
     try {
       await sendMutation(`/api/tuitions/${encodeURIComponent(id)}`, "PATCH", {
         title: editForm.title.trim(),
@@ -116,12 +133,14 @@ export default function MyTuitionsPage() {
       )
     } finally {
       setBusyId(null)
+      setBusyAction(null)
     }
   }
 
   async function handleToggle(tuition: Tuition) {
     if (busyId) return
     setBusyId(tuition._id)
+    setBusyAction("toggle")
     try {
       await sendMutation(
         `/api/tuitions/${encodeURIComponent(tuition._id)}`,
@@ -140,23 +159,21 @@ export default function MyTuitionsPage() {
       )
     } finally {
       setBusyId(null)
+      setBusyAction(null)
     }
   }
 
   async function handleDelete(tuition: Tuition) {
-    if (
-      busyId ||
-      !window.confirm(`Delete "${tuition.title}"? This cannot be undone.`)
-    ) {
-      return
-    }
+    if (busyId) return
     setBusyId(tuition._id)
+    setBusyAction("delete")
     try {
       await sendMutation(
         `/api/tuitions/${encodeURIComponent(tuition._id)}`,
         "DELETE"
       )
       toast.success("Tuition deleted.")
+      setPendingDelete(null)
       tuitions.reload()
     } catch (error) {
       toast.error(
@@ -164,6 +181,7 @@ export default function MyTuitionsPage() {
       )
     } finally {
       setBusyId(null)
+      setBusyAction(null)
     }
   }
 
@@ -263,7 +281,7 @@ export default function MyTuitionsPage() {
                         onClick={() =>
                           editing ? setEditingId(null) : startEdit(tuition)
                         }
-                        disabled={busy}
+                        disabled={anyBusy}
                       >
                         {editing ? (
                           <X aria-hidden="true" />
@@ -277,19 +295,33 @@ export default function MyTuitionsPage() {
                         variant="outline"
                         size="sm"
                         onClick={() => handleToggle(tuition)}
-                        disabled={busy}
+                        disabled={anyBusy}
                       >
-                        <Power aria-hidden="true" />
+                        {busy && busyAction === "toggle" ? (
+                          <LoaderCircle
+                            className="animate-spin"
+                            aria-hidden="true"
+                          />
+                        ) : (
+                          <Power aria-hidden="true" />
+                        )}
                         {tuition.isActive ? "Close" : "Activate"}
                       </Button>
                       <Button
                         type="button"
                         variant="destructive"
                         size="sm"
-                        onClick={() => handleDelete(tuition)}
-                        disabled={busy}
+                        onClick={() => setPendingDelete(tuition)}
+                        disabled={anyBusy}
                       >
-                        <Trash aria-hidden="true" />
+                        {busy && busyAction === "delete" ? (
+                          <LoaderCircle
+                            className="animate-spin"
+                            aria-hidden="true"
+                          />
+                        ) : (
+                          <Trash aria-hidden="true" />
+                        )}
                         Delete
                       </Button>
                     </div>
@@ -313,6 +345,7 @@ export default function MyTuitionsPage() {
                           onChange={(event) =>
                             setEditField("title", event.target.value)
                           }
+                          disabled={busy}
                           className={FIELD_CLASS}
                         />
                       </div>
@@ -329,6 +362,7 @@ export default function MyTuitionsPage() {
                           onChange={(event) =>
                             setEditField("subject", event.target.value)
                           }
+                          disabled={busy}
                           className={FIELD_CLASS}
                         >
                           {SUBJECT_OPTIONS.map((option) => (
@@ -351,6 +385,7 @@ export default function MyTuitionsPage() {
                           onChange={(event) =>
                             setEditField("classLevel", event.target.value)
                           }
+                          disabled={busy}
                           className={FIELD_CLASS}
                         >
                           {CLASS_LEVEL_OPTIONS.map((option) => (
@@ -376,6 +411,7 @@ export default function MyTuitionsPage() {
                               event.target.value as EditForm["mode"]
                             )
                           }
+                          disabled={busy}
                           className={FIELD_CLASS}
                         >
                           {MODE_OPTIONS.filter((option) => option.value).map(
@@ -400,6 +436,7 @@ export default function MyTuitionsPage() {
                           onChange={(event) =>
                             setEditField("location", event.target.value)
                           }
+                          disabled={busy}
                           className={FIELD_CLASS}
                         />
                       </div>
@@ -418,6 +455,7 @@ export default function MyTuitionsPage() {
                           onChange={(event) =>
                             setEditField("monthlyFee", event.target.value)
                           }
+                          disabled={busy}
                           className={FIELD_CLASS}
                         />
                       </div>
@@ -437,6 +475,7 @@ export default function MyTuitionsPage() {
                           onChange={(event) =>
                             setEditField("daysPerWeek", event.target.value)
                           }
+                          disabled={busy}
                           className={FIELD_CLASS}
                         />
                       </div>
@@ -454,6 +493,7 @@ export default function MyTuitionsPage() {
                           onChange={(event) =>
                             setEditField("description", event.target.value)
                           }
+                          disabled={busy}
                           className={cn(FIELD_CLASS, "h-auto resize-y py-2")}
                         />
                       </div>
@@ -471,12 +511,13 @@ export default function MyTuitionsPage() {
                           onChange={(event) =>
                             setEditField("bannerImage", event.target.value)
                           }
+                          disabled={busy}
                           className={FIELD_CLASS}
                         />
                       </div>
                       <div className="sm:col-span-2">
-                        <Button type="submit" disabled={busy} className="h-9">
-                          {busy ? (
+                        <Button type="submit" disabled={anyBusy} className="h-9">
+                          {busy && busyAction === "save" ? (
                             <LoaderCircle
                               className="animate-spin"
                               aria-hidden="true"
@@ -493,6 +534,23 @@ export default function MyTuitionsPage() {
           </ul>
         )
       ) : null}
+
+      <ConfirmDialog
+        open={Boolean(pendingDelete)}
+        title="Delete this tuition?"
+        description={
+          pendingDelete
+            ? `"${pendingDelete.title}" will be permanently removed. This cannot be undone.`
+            : undefined
+        }
+        confirmLabel="Delete tuition"
+        destructive
+        loading={Boolean(pendingDelete && busyId === pendingDelete._id)}
+        onConfirm={() => {
+          if (pendingDelete) void handleDelete(pendingDelete)
+        }}
+        onCancel={() => setPendingDelete(null)}
+      />
     </div>
   )
 }

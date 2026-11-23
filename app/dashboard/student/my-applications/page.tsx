@@ -12,6 +12,7 @@ import {
 import { toast } from "sonner"
 
 import {
+  ConfirmDialog,
   DashboardPageHeader,
   DashboardSkeleton,
   DataEmpty,
@@ -37,6 +38,8 @@ export default function MyApplicationsPage() {
     normalizeApplication
   )
   const [busyId, setBusyId] = useState<string | null>(null)
+  const [pendingCancel, setPendingCancel] = useState<Application | null>(null)
+  const anyBusy = busyId !== null
 
   if (!user) return <DashboardSkeleton />
 
@@ -45,12 +48,7 @@ export default function MyApplicationsPage() {
   )
 
   async function handleCancel(id: string) {
-    if (
-      busyId ||
-      !window.confirm("Cancel this application? This cannot be undone.")
-    ) {
-      return
-    }
+    if (busyId) return
     setBusyId(id)
     try {
       await sendMutation(
@@ -58,6 +56,7 @@ export default function MyApplicationsPage() {
         "DELETE"
       )
       toast.success("Application cancelled.")
+      setPendingCancel(null)
       applications.reload()
     } catch (error) {
       toast.error(
@@ -124,7 +123,9 @@ export default function MyApplicationsPage() {
                       </span>
                       <span className="inline-flex items-center gap-1.5">
                         <Mail className="size-3.5" aria-hidden="true" />
-                        {application.tutorEmail || "—"}
+                        <span className="truncate">
+                          {application.tutorEmail || "—"}
+                        </span>
                       </span>
                       <span className="inline-flex items-center gap-1.5">
                         <CalendarDays className="size-3.5" aria-hidden="true" />
@@ -147,8 +148,8 @@ export default function MyApplicationsPage() {
                     {application.status === "pending" ? (
                       <button
                         type="button"
-                        onClick={() => handleCancel(application._id)}
-                        disabled={isBusy}
+                        onClick={() => setPendingCancel(application)}
+                        disabled={anyBusy}
                         className={cn(
                           buttonVariants({
                             variant: "destructive",
@@ -181,6 +182,23 @@ export default function MyApplicationsPage() {
           </ul>
         )
       ) : null}
+
+      <ConfirmDialog
+        open={Boolean(pendingCancel)}
+        title="Cancel this application?"
+        description={
+          pendingCancel
+            ? `Your request for "${pendingCancel.tuitionTitle || "this tuition"}" will be withdrawn.`
+            : undefined
+        }
+        confirmLabel="Cancel application"
+        destructive
+        loading={Boolean(pendingCancel && busyId === pendingCancel._id)}
+        onConfirm={() => {
+          if (pendingCancel) void handleCancel(pendingCancel._id)
+        }}
+        onCancel={() => setPendingCancel(null)}
+      />
     </div>
   )
 }

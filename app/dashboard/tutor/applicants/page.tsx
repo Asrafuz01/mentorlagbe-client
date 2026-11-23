@@ -14,6 +14,7 @@ import {
 import { toast } from "sonner"
 
 import {
+  ConfirmDialog,
   DashboardPageHeader,
   DashboardSkeleton,
   DataEmpty,
@@ -44,6 +45,11 @@ export default function TutorApplicantsPage() {
     normalizeOwnTuition
   )
   const [busyId, setBusyId] = useState<string | null>(null)
+  const [pendingDecision, setPendingDecision] = useState<{
+    applicationId: string
+    status: "accepted" | "rejected"
+  } | null>(null)
+  const anyBusy = busyId !== null
 
   if (!user) return <DashboardSkeleton />
 
@@ -66,7 +72,7 @@ export default function TutorApplicantsPage() {
   }
 
   async function handleStatus(id: string, status: "accepted" | "rejected") {
-    if (busyId || !window.confirm(`Mark this application as ${status}?`)) return
+    if (busyId) return
     setBusyId(id)
     try {
       await sendMutation(
@@ -79,6 +85,7 @@ export default function TutorApplicantsPage() {
           ? "Application accepted."
           : "Application rejected."
       )
+      setPendingDecision(null)
       applications.reload()
     } catch (error) {
       toast.error(
@@ -103,6 +110,9 @@ export default function TutorApplicantsPage() {
       ) : null}
       {!applications.loading && applications.error ? (
         <DataError message={applications.error} onRetry={applications.reload} />
+      ) : null}
+      {!tuitions.loading && tuitions.error ? (
+        <DataError message={tuitions.error} onRetry={tuitions.reload} />
       ) : null}
 
       {!applications.loading && !applications.error ? (
@@ -139,11 +149,21 @@ export default function TutorApplicantsPage() {
                         type="button"
                         size="sm"
                         onClick={() =>
-                          handleStatus(application._id, "accepted")
+                          setPendingDecision({
+                            applicationId: application._id,
+                            status: "accepted",
+                          })
                         }
-                        disabled={busy || application.status === "accepted"}
+                        disabled={anyBusy || application.status !== "pending"}
                       >
-                        <Check aria-hidden="true" />
+                        {busy && pendingDecision?.status === "accepted" ? (
+                          <LoaderCircle
+                            className="animate-spin"
+                            aria-hidden="true"
+                          />
+                        ) : (
+                          <Check aria-hidden="true" />
+                        )}
                         Accept
                       </Button>
                       <Button
@@ -151,11 +171,21 @@ export default function TutorApplicantsPage() {
                         variant="destructive"
                         size="sm"
                         onClick={() =>
-                          handleStatus(application._id, "rejected")
+                          setPendingDecision({
+                            applicationId: application._id,
+                            status: "rejected",
+                          })
                         }
-                        disabled={busy || application.status === "rejected"}
+                        disabled={anyBusy || application.status !== "pending"}
                       >
-                        <CircleX aria-hidden="true" />
+                        {busy && pendingDecision?.status === "rejected" ? (
+                          <LoaderCircle
+                            className="animate-spin"
+                            aria-hidden="true"
+                          />
+                        ) : (
+                          <CircleX aria-hidden="true" />
+                        )}
                         Reject
                       </Button>
                     </div>
@@ -177,7 +207,7 @@ export default function TutorApplicantsPage() {
                         className="size-3.5 shrink-0"
                         aria-hidden="true"
                       />
-                      <span>
+                      <span className="break-words">
                         {application.preferredSchedule ||
                           "No schedule provided"}
                       </span>
@@ -195,7 +225,7 @@ export default function TutorApplicantsPage() {
                           className="mt-0.5 size-3.5 shrink-0"
                           aria-hidden="true"
                         />
-                        <span className="leading-relaxed">
+                        <span className="line-clamp-4 break-words leading-relaxed">
                           {application.studentNote || application.message}
                         </span>
                       </div>
@@ -217,6 +247,36 @@ export default function TutorApplicantsPage() {
           </ul>
         )
       ) : null}
+
+      <ConfirmDialog
+        open={Boolean(pendingDecision)}
+        title={
+          pendingDecision?.status === "rejected"
+            ? "Reject this applicant?"
+            : "Accept this applicant?"
+        }
+        description={
+          pendingDecision?.status === "rejected"
+            ? "The student will see that their application was rejected."
+            : "The student will be notified that their application was accepted."
+        }
+        confirmLabel={
+          pendingDecision?.status === "rejected" ? "Reject applicant" : "Accept applicant"
+        }
+        destructive={pendingDecision?.status === "rejected"}
+        loading={Boolean(
+          pendingDecision && busyId === pendingDecision.applicationId
+        )}
+        onConfirm={() => {
+          if (pendingDecision) {
+            void handleStatus(
+              pendingDecision.applicationId,
+              pendingDecision.status
+            )
+          }
+        }}
+        onCancel={() => setPendingDecision(null)}
+      />
     </div>
   )
 }

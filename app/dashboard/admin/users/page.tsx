@@ -5,6 +5,7 @@ import { LoaderCircle, Mail, Search, ShieldCheck } from "lucide-react"
 import { toast } from "sonner"
 
 import {
+  ConfirmDialog,
   DashboardPageHeader,
   DashboardSkeleton,
   DataEmpty,
@@ -30,6 +31,12 @@ export default function AdminUsersPage() {
   const users = useDashboardCollection<User>("/api/admin/users", normalizeUser)
   const [query, setQuery] = useState("")
   const [busyId, setBusyId] = useState<string | null>(null)
+  const [pendingRole, setPendingRole] = useState<{
+    id: string
+    name: string
+    role: UserRole
+  } | null>(null)
+  const anyBusy = busyId !== null
 
   if (!currentUser) return <DashboardSkeleton />
 
@@ -43,6 +50,7 @@ export default function AdminUsersPage() {
         { role }
       )
       toast.success(`Role updated to ${role}.`)
+      setPendingRole(null)
       users.reload()
     } catch (error) {
       toast.error(
@@ -149,12 +157,13 @@ export default function AdminUsersPage() {
                               aria-label={`Role for ${user.name}`}
                               value={user.role}
                               onChange={(event) =>
-                                handleRole(
-                                  user._id,
-                                  event.target.value as UserRole
-                                )
+                                setPendingRole({
+                                  id: user._id,
+                                  name: user.name,
+                                  role: event.target.value as UserRole,
+                                })
                               }
-                              disabled={isBusy || isSelf}
+                              disabled={anyBusy || isSelf}
                               className={cn(
                                 SELECT_CLASS,
                                 isSelf && "cursor-not-allowed"
@@ -183,6 +192,23 @@ export default function AdminUsersPage() {
           </div>
         )
       ) : null}
+
+      <ConfirmDialog
+        open={Boolean(pendingRole)}
+        title="Change this user's role?"
+        description={
+          pendingRole
+            ? `${pendingRole.name} will become ${pendingRole.role === "admin" ? "an admin" : `a ${pendingRole.role}`}. This takes effect on their next session refresh.`
+            : undefined
+        }
+        confirmLabel="Change role"
+        destructive={pendingRole?.role === "admin"}
+        loading={Boolean(pendingRole && busyId === pendingRole.id)}
+        onConfirm={() => {
+          if (pendingRole) void handleRole(pendingRole.id, pendingRole.role)
+        }}
+        onCancel={() => setPendingRole(null)}
+      />
     </div>
   )
 }
