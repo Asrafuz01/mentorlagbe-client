@@ -22,7 +22,7 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 - Auth: `lib/auth.ts` (user `role`/`plan` fields), `lib/auth-client.ts` (`inferAdditionalFields`), `app/api/auth/[...all]/route.ts`.
 - Auth pages: `app/sign-up`, `app/sign-in` with shared UI in `components/auth/*`; `sonner` `<Toaster />` mounted in `app/layout.tsx`.
 - UI: `components/brand.tsx`, `components/navbar/*`, `components/footer/*`, `components/home/*`, `components/shared/*`, `components/tuitions/*`, `components/payments/*`, `components/dashboard/*`.
-- Tuitions: `lib/tuition-api.ts` (shared fetch/normalize), `/tuitions` with server search/filter/pagination, `/tuitions/[id]` with role-gated student application POST.
+- Tuitions: `lib/tuition-api.ts` (shared fetch/normalize), `/tuitions` with server search/filter/pagination, `/tuitions/[id]` with role-gated student application POST; the apply panel resolves the role from `/api/users/me` when the BetterAuth session omits it.
 - Types: `types/index.ts` holds shared `User`, `Tuition`, `Application`, `Payment` interfaces and status unions.
 - Home page: `app/page.tsx` wires Navbar + HeroSection + FeaturedTuitionsSection + HowItWorksSection + SubjectsStatsSection + PricingSection + Footer.
 - Public pages: `/pricing` (interactive Stripe checkout via `components/payments/*`), `/about` (mission + reused HowItWorksSection), `/payment/success` (optional verify), `/payment/cancel`.

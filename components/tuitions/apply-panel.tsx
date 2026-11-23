@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, type FormEvent } from "react"
+import { useEffect, useState, type FormEvent } from "react"
 import Link from "next/link"
 import {
   BadgeCheck,
@@ -12,6 +12,7 @@ import { toast } from "sonner"
 
 import { Button } from "@/components/ui/button"
 import { AUTH_PATHS } from "@/components/navbar/nav-config"
+import { API_BASE_URL } from "@/lib/api"
 import { useSession } from "@/lib/auth-client"
 import { authenticatedFetch } from "@/lib/express-auth"
 import { TUITION_API_URL } from "@/lib/tuition-api"
@@ -38,12 +39,62 @@ export function ApplyPanel({ tuitionId, tuitionTitle }: ApplyPanelProps) {
   }>({})
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitted, setSubmitted] = useState(false)
+  const [roleCheck, setRoleCheck] = useState<{
+    email: string
+    role: string
+    checked: boolean
+  } | null>(null)
 
   const user = session?.user
-  const role = (user?.role ?? "").trim().toLowerCase()
+  const email =
+    typeof user?.email === "string" ? user.email.trim().toLowerCase() : ""
+  const sessionRole = (user?.role ?? "").trim().toLowerCase()
+  const currentRoleCheck = roleCheck?.email === email ? roleCheck : null
+  const role = currentRoleCheck?.role || sessionRole
   const isRestrictedRole = role === "tutor" || role === "admin"
+  const isCheckingRole = Boolean(email) && !currentRoleCheck?.checked
 
-  if (isPending) {
+  // BetterAuth sessions can omit the custom role field, so ask the Express
+  // profile for the authoritative value before showing the application form.
+  useEffect(() => {
+    if (isPending || !email) return
+
+    let cancelled = false
+
+    async function loadRole() {
+      let nextRole = ""
+      try {
+        const response = await authenticatedFetch(
+          `${API_BASE_URL}/api/users/me`,
+          { cache: "no-store" }
+        )
+        const payload: unknown = await response.json().catch(() => null)
+        if (!response.ok || !payload || typeof payload !== "object") return
+
+        const value = (payload as Record<string, unknown>).role
+        const normalized =
+          typeof value === "string" ? value.trim().toLowerCase() : ""
+        if (
+          normalized === "student" ||
+          normalized === "tutor" ||
+          normalized === "admin"
+        ) {
+          nextRole = normalized
+        }
+      } catch {
+        // Keep the session role as a fallback if the profile request fails.
+      } finally {
+        if (!cancelled) setRoleCheck({ email, role: nextRole, checked: true })
+      }
+    }
+
+    void loadRole()
+    return () => {
+      cancelled = true
+    }
+  }, [email, isPending])
+
+  if (isPending || (user && isCheckingRole)) {
     return (
       <div className="rounded-2xl border border-border bg-card p-6 shadow-sm">
         <div className="h-5 w-32 animate-pulse rounded bg-muted" />
