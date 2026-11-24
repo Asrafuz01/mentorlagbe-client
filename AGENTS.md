@@ -27,7 +27,7 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 - Home page: `app/page.tsx` wires Navbar + HeroSection + FeaturedTuitionsSection + HowItWorksSection + SubjectsStatsSection + PricingSection + Footer.
 - Public pages: `/pricing` (interactive Stripe checkout via `components/payments/*`), `/about` (mission + reused HowItWorksSection), `/payment/success` (optional verify), `/payment/cancel`.
 - Global UI: `app/loading.tsx` (accessible spinner/skeleton), `app/not-found.tsx` (404), `app/error.tsx` (client error boundary with `retry()`).
-- API URLs: `lib/api.ts` exports shared `API_BASE_URL` for backend calls.
+- API URLs: `lib/api.ts` exports shared `API_BASE_URL` for backend calls, with a deployed-backend fallback in production; `lib/auth.ts` accepts `BETTER_AUTH_URL` or `NEXT_PUBLIC_BETTER_AUTH_URL` for the BetterAuth base URL.
 - Auth bridge: `lib/express-auth.ts` exchanges the BetterAuth session for a cached Express JWT, clears it on sign-out, and `authenticatedFetch` attaches it with one 401 retry across dashboard, application, checkout, and profile requests.
 - Dashboard: `app/dashboard/layout.tsx` shell with session-safe guard (never redirects while `isPending`), collapsible sidebar + mobile drawer, role nav, `DashboardStatCard`; `/dashboard` role redirect; `/dashboard/profile` with ImgBB upload (`lib/imgbb.ts`) + auth/backend sync.
 - ImgBB: `lib/imgbb.ts` `uploadImageToImgBB(file)` reuses `NEXT_PUBLIC_IMGBB_API_KEY` for profile and tutor tuition images.
