@@ -17,9 +17,23 @@ const socialProviders =
       }
     : {}
 
+/**
+ * Prefer the explicit, server-only frontend origin. On Vercel, VERCEL_URL is
+ * always the active deployment, so it must outrank a build-time public URL that
+ * may still point at an old deployment.
+ */
+function resolveAuthBaseURL(): string | undefined {
+  if (process.env.BETTER_AUTH_URL?.trim()) return process.env.BETTER_AUTH_URL.trim()
+  if (process.env.VERCEL_URL?.trim()) {
+    const host = process.env.VERCEL_URL.trim()
+    return host.startsWith("http") ? host : `https://${host}`
+  }
+  return process.env.NEXT_PUBLIC_BETTER_AUTH_URL?.trim() || undefined
+}
+
 export const auth = betterAuth({
   secret: process.env.BETTER_AUTH_SECRET,
-  baseURL: process.env.BETTER_AUTH_URL || process.env.NEXT_PUBLIC_BETTER_AUTH_URL,
+  baseURL: resolveAuthBaseURL(),
   emailAndPassword: {
     enabled: true,
   },
