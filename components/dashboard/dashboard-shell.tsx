@@ -66,7 +66,7 @@ export function DashboardShell({ children }: DashboardShellProps) {
           onOpenMobile={() => setMobileOpen(true)}
         />
         <main className="min-w-0 flex-1 px-4 py-6 sm:px-6 lg:px-8">
-          <div className="mx-auto w-full max-w-7xl">{children}</div>
+          <div className="w-full">{children}</div>
         </main>
       </div>
     </div>

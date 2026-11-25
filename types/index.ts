@@ -4,7 +4,12 @@ export type UserRole = "student" | "tutor" | "admin"
 export type TuitionMode = "Online" | "Offline"
 export type ApprovalStatus = "pending" | "approved" | "rejected"
 export type ApplicationStatus = "pending" | "accepted" | "rejected"
-export type PaymentStatus = "pending" | "completed" | "failed" | "refunded"
+export type PaymentStatus =
+  | "pending"
+  | "completed"
+  | "paid"
+  | "failed"
+  | "refunded"
 export type SubscriptionPlan = "free" | "pro" | "student-pro" | "tutor-pro"
 
 export interface User {
@@ -13,6 +18,7 @@ export interface User {
   email: string
   role: UserRole
   plan?: SubscriptionPlan
+  planTier?: "free" | "pro"
   emailVerified?: boolean
   image?: string
   phone?: string
@@ -90,15 +96,19 @@ export interface Payment {
   _id: string
   userId: string
   plan: SubscriptionPlan
+  planName?: SubscriptionPlan
   amount: number
   currency: string
   status: PaymentStatus
+  paymentStatus?: PaymentStatus
+  transactionId?: string
   userName?: string
   userEmail?: string
   userRole?: UserRole
   tuitionId?: string
   stripeSessionId?: string
   stripePaymentIntentId?: string
+  paidAt?: string
   createdAt: string
   updatedAt?: string
 }

@@ -200,7 +200,7 @@ export default function MyTuitionsPage() {
         actions={
           <Link
             href="/dashboard/tutor/post-tuition"
-            className={cn(buttonVariants(), "h-9")}
+            className={buttonVariants({ size: "lg" })}
           >
             <Plus aria-hidden="true" />
             Post a Tuition
@@ -515,7 +515,7 @@ export default function MyTuitionsPage() {
                         />
                       </div>
                       <div className="sm:col-span-2">
-                        <Button type="submit" disabled={anyBusy} className="h-9">
+                        <Button type="submit" size="lg" disabled={anyBusy}>
                           {busy && busyAction === "save" ? (
                             <LoaderCircle
                               className="animate-spin"

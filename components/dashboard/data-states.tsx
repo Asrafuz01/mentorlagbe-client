@@ -55,7 +55,7 @@ export function DataEmpty({
       {href && actionLabel ? (
         <Link
           href={href}
-          className={cn(buttonVariants({ size: "sm" }), "mt-5 h-9")}
+          className={cn(buttonVariants({ size: "default" }), "mt-5")}
         >
           {actionLabel}
         </Link>
@@ -98,8 +98,8 @@ export function DataError({
           onClick={handleRetry}
           disabled={retrying}
           className={cn(
-            buttonVariants({ variant: "outline", size: "sm" }),
-            "mt-5 h-9"
+            buttonVariants({ variant: "outline", size: "default" }),
+            "mt-5"
           )}
         >
           <RotateCcw

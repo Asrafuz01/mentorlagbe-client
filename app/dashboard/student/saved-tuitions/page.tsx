@@ -25,7 +25,6 @@ import { Button, buttonVariants } from "@/components/ui/button"
 import { normalizeSavedTuition } from "@/lib/bookmark-api"
 import { sendMutation } from "@/lib/dashboard-api"
 import { formatDate, formatMoney } from "@/lib/dashboard-format"
-import { cn } from "@/lib/utils"
 import type { SavedTuition } from "@/types"
 
 export default function SavedTuitionsPage() {
@@ -68,7 +67,7 @@ export default function SavedTuitionsPage() {
         actions={
           <Link
             href="/tuitions"
-            className={cn(buttonVariants({ variant: "outline" }), "h-9")}
+            className={buttonVariants({ variant: "outline", size: "lg" })}
           >
             Browse Tuitions
           </Link>
@@ -141,10 +140,10 @@ export default function SavedTuitionsPage() {
                   <div className="flex flex-wrap items-center gap-2 border-t border-border pt-4">
                     <Link
                       href={`/tuitions/${item.tuitionId}`}
-                      className={cn(
-                        buttonVariants({ variant: "default", size: "sm" }),
-                        "h-8"
-                      )}
+                      className={buttonVariants({
+                        variant: "default",
+                        size: "sm",
+                      })}
                     >
                       View Details
                     </Link>
@@ -162,7 +161,6 @@ export default function SavedTuitionsPage() {
                       size="sm"
                       disabled={isBusy}
                       onClick={() => handleUnsave(item)}
-                      className="h-8"
                     >
                       {isBusy ? (
                         <LoaderCircle

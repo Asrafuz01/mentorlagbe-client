@@ -378,8 +378,9 @@ function PostTuitionForm({
             </p>
             <Button
               type="submit"
+              size="lg"
               disabled={submitting || uploading || atFreeLimit}
-              className="h-10 shrink-0"
+              className="shrink-0"
             >
               {submitting ? (
                 <>

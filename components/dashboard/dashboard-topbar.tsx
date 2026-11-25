@@ -123,10 +123,11 @@ export function DashboardTopbar({
 
       <Link
         href="/"
+        aria-label="Back to Home"
         className="inline-flex h-9 items-center gap-1.5 rounded-lg px-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
       >
         <House aria-hidden="true" />
-        <span className="hidden sm:inline">Back to Home</span>
+        <span className="sr-only sm:not-sr-only">Back to Home</span>
       </Link>
 
       <div className="ml-auto flex min-w-0 items-center gap-2 sm:gap-3">
@@ -168,7 +169,7 @@ export function DashboardTopbar({
           size="sm"
           onClick={handleSignOut}
           disabled={isSigningOut}
-          aria-label="Sign Out"
+          aria-label={isSigningOut ? "Signing out" : "Sign Out"}
           className="shrink-0"
         >
           {isSigningOut ? (
@@ -176,7 +177,7 @@ export function DashboardTopbar({
           ) : (
             <LogOut aria-hidden="true" />
           )}
-          <span className="hidden sm:inline">
+          <span className="sr-only sm:not-sr-only">
             {isSigningOut ? "Signing out…" : "Sign Out"}
           </span>
         </Button>

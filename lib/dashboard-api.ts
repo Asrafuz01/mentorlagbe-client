@@ -5,6 +5,7 @@ import type {
   Application,
   ApplicationStatus,
   Payment,
+  PaymentStatus,
   SubscriptionPlan,
   Tuition,
   User,
@@ -163,12 +164,22 @@ export function normalizeUser(value: unknown): User | null {
   const email = asString(raw.email)
   if (!id || !email) return null
 
+  const plan = toPlan(raw.plan)
+  const planTier =
+    raw.planTier === "pro" ||
+    plan === "pro" ||
+    plan === "student-pro" ||
+    plan === "tutor-pro"
+      ? "pro"
+      : "free"
+
   return {
     _id: id,
     name: asString(raw.name) || email.split("@")[0],
     email,
     role: toRole(raw.role),
-    plan: toPlan(raw.plan),
+    plan,
+    planTier,
     emailVerified: Boolean(raw.emailVerified),
     image: asOptional(raw.image),
     phone: asOptional(raw.phone),
@@ -191,24 +202,50 @@ export function normalizePayment(value: unknown): Payment | null {
       ? (raw.user as Record<string, unknown>)
       : {}
 
+  const statusValue = asString(raw.status) || asString(raw.paymentStatus)
+  const canonicalStatus =
+    statusValue.toLowerCase() === "paid" ? "completed" : statusValue
+  const canonicalStatuses = ["completed", "pending", "failed", "refunded"] as const
+  const status = canonicalStatuses.includes(
+    canonicalStatus as (typeof canonicalStatuses)[number]
+  )
+    ? (canonicalStatus as Payment["status"])
+    : "pending"
+
+  const rawPaymentStatus = asString(raw.paymentStatus)
+  const paymentStatus: PaymentStatus = (
+    ["paid", "completed", "pending", "failed", "refunded"] as const
+  ).includes(rawPaymentStatus as PaymentStatus)
+    ? (rawPaymentStatus as PaymentStatus)
+    : status === "completed"
+      ? "paid"
+      : status
+
+  const transactionId =
+    asOptional(raw.transactionId) || asOptional(raw.stripePaymentIntentId)
+
   return {
     _id: id,
     userId: asString(raw.userId) || asString(user._id) || asString(user.id),
     plan: toPlan(raw.plan),
+    planName: asOptional(raw.planName) ? toPlan(raw.planName) : undefined,
     amount: Number(raw.amount) || 0,
     currency: asString(raw.currency, "USD"),
-    status: (["completed", "pending", "failed", "refunded"] as const).includes(
-      asString(raw.status) as Payment["status"]
-    )
-      ? (asString(raw.status) as Payment["status"])
-      : "pending",
+    status,
+    paymentStatus,
+    transactionId,
     userName: asString(raw.userName) || asString(user.name),
     userEmail: asString(raw.userEmail) || asString(user.email),
     userRole:
       raw.userRole || user.role ? toRole(raw.userRole || user.role) : undefined,
     tuitionId: asOptional(raw.tuitionId),
     stripeSessionId: asOptional(raw.stripeSessionId),
-    stripePaymentIntentId: asOptional(raw.stripePaymentIntentId),
+    stripePaymentIntentId: transactionId,
+    paidAt:
+      asOptional(raw.paidAt) ||
+      (status === "completed"
+        ? asOptional(raw.updatedAt) || asOptional(raw.createdAt)
+        : undefined),
     createdAt: asString(raw.createdAt),
     updatedAt: asOptional(raw.updatedAt),
   }

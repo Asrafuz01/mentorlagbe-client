@@ -26,7 +26,6 @@ import {
 import { buttonVariants } from "@/components/ui/button"
 import { normalizeApplication, sendMutation } from "@/lib/dashboard-api"
 import { formatDate, formatMoney } from "@/lib/dashboard-format"
-import { cn } from "@/lib/utils"
 import type { Application } from "@/types"
 
 export default function MyApplicationsPage() {
@@ -75,7 +74,7 @@ export default function MyApplicationsPage() {
         actions={
           <Link
             href="/tuitions"
-            className={cn(buttonVariants({ variant: "outline" }), "h-9")}
+            className={buttonVariants({ variant: "outline", size: "lg" })}
           >
             Browse Tuitions
           </Link>
@@ -148,13 +147,10 @@ export default function MyApplicationsPage() {
                         type="button"
                         onClick={() => setPendingCancel(application)}
                         disabled={anyBusy}
-                        className={cn(
-                          buttonVariants({
-                            variant: "destructive",
-                            size: "sm",
-                          }),
-                          "h-8"
-                        )}
+                        className={buttonVariants({
+                          variant: "destructive",
+                          size: "sm",
+                        })}
                       >
                         {isBusy ? (
                           <LoaderCircle

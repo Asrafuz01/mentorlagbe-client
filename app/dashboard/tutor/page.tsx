@@ -23,7 +23,6 @@ import {
   useDashboardIdentity,
 } from "@/components/dashboard"
 import { buttonVariants } from "@/components/ui/button"
-import { cn } from "@/lib/utils"
 import type { Application, Tuition } from "@/types"
 
 export default function TutorOverviewPage() {
@@ -79,7 +78,7 @@ export default function TutorOverviewPage() {
         actions={
           <Link
             href="/dashboard/tutor/post-tuition"
-            className={cn(buttonVariants(), "h-9")}
+            className={buttonVariants({ size: "lg" })}
           >
             <Plus aria-hidden="true" />
             Post a Tuition

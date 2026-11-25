@@ -31,7 +31,9 @@ export default function AdminTransactionsPage() {
     return <DashboardSkeleton />
   }
 
-  const completed = payments.items.filter((item) => item.status === "completed")
+  const completed = payments.items.filter(
+    (item) => item.status === "completed" || item.paymentStatus === "paid"
+  )
   const revenue = completed.reduce((sum, item) => sum + item.amount, 0)
 
   return (
@@ -103,23 +105,28 @@ export default function AdminTransactionsPage() {
                           {payment.userRole || "—"}
                         </td>
                         <td className="px-5 py-3 text-xs">
-                          {PLAN_LABELS[payment.plan] ?? payment.plan}
+                          {PLAN_LABELS[payment.planName ?? payment.plan] ??
+                            payment.planName ??
+                            payment.plan}
                         </td>
                         <td className="px-5 py-3 font-semibold">
                           {formatMoney(payment.amount, payment.currency)}
                         </td>
                         <td className="px-5 py-3">
                           <code className="rounded bg-muted px-1.5 py-0.5 text-[0.7rem] text-muted-foreground">
-                            {payment.stripePaymentIntentId ||
+                            {payment.transactionId ||
+                              payment.stripePaymentIntentId ||
                               payment.stripeSessionId ||
                               payment._id}
                           </code>
                         </td>
                         <td className="px-5 py-3 text-xs text-muted-foreground">
-                          {formatDate(payment.createdAt)}
+                          {formatDate(payment.paidAt || payment.createdAt)}
                         </td>
                         <td className="px-5 py-3">
-                          <StatusBadge status={payment.status} />
+                          <StatusBadge
+                            status={payment.paymentStatus || payment.status}
+                          />
                         </td>
                       </tr>
                     ))}

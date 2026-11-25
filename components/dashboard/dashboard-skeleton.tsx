@@ -39,7 +39,7 @@ export function DashboardSkeleton() {
           <p className="mt-3 text-sm text-muted-foreground">
             Preparing your workspace…
           </p>
-          <div className="mt-8 grid w-full max-w-5xl gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="mt-8 grid w-full gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {Array.from({ length: 3 }, (_, index) => (
               <div
                 key={index}

@@ -45,7 +45,9 @@ export default function AdminOverviewPage() {
     (item) => item.approvalStatus === "approved"
   ).length
   const tutors = users.items.filter((item) => item.role === "tutor").length
-  const completed = payments.items.filter((item) => item.status === "completed")
+  const completed = payments.items.filter(
+    (item) => item.status === "completed" || item.paymentStatus === "paid"
+  )
   const revenue = completed.reduce((sum, item) => sum + item.amount, 0)
 
   const actions = [

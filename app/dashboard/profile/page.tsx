@@ -468,7 +468,7 @@ function ProfileFields({ user, refreshIdentity }: ProfileFieldsProps) {
               type="submit"
               size="lg"
               disabled={submitting || uploading}
-              className="h-10 shrink-0"
+              className="shrink-0"
             >
               {submitting ? (
                 <>
