@@ -8,10 +8,12 @@ import {
   Image as ImageIcon,
   type LucideIcon,
   MapPin,
+  Star,
   UserRound,
   Video,
 } from "lucide-react"
 
+import { BookmarkButton } from "@/components/bookmarks"
 import { buttonVariants } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import type { Tuition } from "@/types"
@@ -82,6 +84,9 @@ export function TuitionCard({ tuition, className }: TuitionCardProps) {
           <Video className="size-3" aria-hidden="true" />
           {tuition.mode}
         </span>
+        <div className="absolute right-3 bottom-3">
+          <BookmarkButton tuitionId={tuition._id} />
+        </div>
       </div>
 
       <div className="flex flex-1 flex-col p-5">
@@ -94,6 +99,21 @@ export function TuitionCard({ tuition, className }: TuitionCardProps) {
         <p className="mt-2 line-clamp-2 text-sm leading-relaxed text-muted-foreground">
           {tuition.description}
         </p>
+
+        {Boolean(tuition.reviewCount) && (
+          <p className="mt-2 flex items-center gap-1.5 text-xs text-muted-foreground">
+            <Star
+              className="size-3.5 fill-amber-400 text-amber-400"
+              aria-hidden="true"
+            />
+            <span className="font-semibold text-foreground">
+              {(tuition.averageRating ?? 0).toFixed(1)}
+            </span>
+            <span>
+              ({tuition.reviewCount} review{tuition.reviewCount === 1 ? "" : "s"})
+            </span>
+          </p>
+        )}
 
         <dl className="mt-4 grid grid-cols-2 gap-x-3 gap-y-3 border-t border-border pt-4">
           <Detail

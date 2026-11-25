@@ -10,6 +10,7 @@ import { cn } from "@/lib/utils"
 import { isActivePath, NAV_ITEMS } from "./nav-config"
 import { NavLink } from "./nav-link"
 import { SessionActions } from "./session-actions"
+import { ThemeToggle } from "./theme-toggle"
 import { useNavbarSession } from "./use-nav-session"
 
 const MENU_ID = "navbar-mobile-menu"
@@ -66,7 +67,8 @@ export function Navbar({ className }: NavbarProps) {
           ))}
         </ul>
 
-        <div className="hidden lg:flex lg:items-center">
+        <div className="hidden lg:flex lg:items-center lg:gap-2">
+          <ThemeToggle />
           <SessionActions session={session} />
         </div>
 
@@ -112,6 +114,10 @@ export function Navbar({ className }: NavbarProps) {
                 stacked
                 onNavigate={closeMenu}
               />
+            </div>
+
+            <div className="border-t border-border/80 pt-3">
+              <ThemeToggle showLabel />
             </div>
           </div>
         </div>

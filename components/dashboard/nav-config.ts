@@ -1,4 +1,5 @@
 import {
+  Bookmark,
   ClipboardList,
   CreditCard,
   FileText,
@@ -28,6 +29,11 @@ export const DASHBOARD_NAV: Record<DashboardRole, readonly DashboardNavItem[]> =
         label: "My Applications",
         href: "/dashboard/student/my-applications",
         icon: ClipboardList,
+      },
+      {
+        label: "Saved Tuitions",
+        href: "/dashboard/student/saved-tuitions",
+        icon: Bookmark,
       },
       { label: "Update Profile", href: "/dashboard/profile", icon: UserRound },
     ],

@@ -39,6 +39,30 @@ export interface Tuition {
   isActive: boolean
   createdAt: string
   tutorId?: string
+  averageRating?: number
+  reviewCount?: number
+  updatedAt?: string
+}
+
+export interface SavedTuition {
+  _id: string
+  tuitionId: string
+  tuitionTitle?: string
+  subject?: string
+  studentEmail?: string
+  createdAt: string
+  tuition: Tuition | null
+}
+
+export interface Review {
+  _id: string
+  tuitionId: string
+  studentId?: string
+  studentName: string
+  studentEmail?: string
+  rating: number
+  comment: string
+  createdAt: string
   updatedAt?: string
 }
 

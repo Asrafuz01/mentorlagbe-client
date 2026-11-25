@@ -11,7 +11,7 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 # MentorLagbe conventions
 
 - Stack: Next.js App Router, TypeScript, Tailwind CSS, shadcn Base UI, BetterAuth; Express + MongoDB backend.
-- Roles: `student` | `tutor` | `admin`. Collections: `users`, `tuitions`, `applications`, `payments`.
+- Roles: `student` | `tutor` | `admin`. Collections: `users`, `tuitions`, `applications`, `payments`, `bookmarks`, `reviews`.
 - Keep components modular, responsive, and cleanly typed. Reuse `components/brand.tsx` for all branding.
 - Do not run full `tsc` checks unless explicitly asked.
 - Briefly update this file after major milestones.
@@ -37,3 +37,6 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 - Role sync: signup carries an email-scoped role hint into the first Express JWT exchange, and `lib/auth-identity.ts` + `useDashboardIdentity` treat `/api/users/me` as authoritative for role/plan across dashboard, navbar, apply panel, and checkout.
 - Final audit stabilization: shared cached profile store with request dedup/refresh and sign-out clearing, role-section guards, full tutor list limits, pending payment states, filter/pagination/retry fixes, preserved signup/apply redirects, a pre-signup role hint, and production-safe error copy.
 - Payment verification: `/payment/success` confirms the Stripe session from the browser with `authenticatedFetch`, so `/api/payments/verify` can require the customer's Express JWT; cached auth identity is cleared on confirmation.
+- Bookmarks: `components/bookmarks/*` shares student-only saved-tuition state via a provider mounted in `app/layout.tsx`; buttons live on cards and `/tuitions/[id]`, with `/dashboard/student/saved-tuitions` for unsave/view actions and a Free-plan limit of 5 enforced by the API.
+- Reviews: `components/reviews/*` shows average rating, review list, and an accepted-student 1–5 star form on `/tuitions/[id]`; `normalizeTuition` carries cached `averageRating`/`reviewCount` for cards.
+- Theme: `components/navbar/theme-toggle.tsx` adds an accessible desktop/mobile light/dark switch on top of the existing `ThemeProvider` hotkey.

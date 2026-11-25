@@ -9,12 +9,15 @@ import {
   Image as ImageIcon,
   Mail,
   MapPin,
+  Star,
   UserRound,
   Video,
 } from "lucide-react"
 
+import { BookmarkButton } from "@/components/bookmarks"
 import { Footer } from "@/components/footer"
 import { Navbar } from "@/components/navbar"
+import { ReviewSection } from "@/components/reviews"
 import { ApplyPanel } from "@/components/tuitions"
 import { getTuitionById } from "@/lib/tuition-api"
 
@@ -122,11 +125,25 @@ export default async function TuitionDetailsPage({
                 <span className="rounded-full bg-secondary px-3 py-1 text-xs font-medium text-secondary-foreground">
                   {tuition.mode}
                 </span>
+                {Boolean(tuition.reviewCount) && (
+                  <span className="inline-flex items-center gap-1 rounded-full bg-amber-400/10 px-3 py-1 text-xs font-medium text-amber-700 dark:text-amber-300">
+                    <Star
+                      className="size-3.5 fill-amber-400 text-amber-400"
+                      aria-hidden="true"
+                    />
+                    {(tuition.averageRating ?? 0).toFixed(1)} (
+                    {tuition.reviewCount} review
+                    {tuition.reviewCount === 1 ? "" : "s"})
+                  </span>
+                )}
               </div>
 
-              <h1 className="mt-4 text-3xl font-semibold tracking-tight sm:text-4xl">
-                {tuition.title}
-              </h1>
+              <div className="mt-4 flex flex-wrap items-start justify-between gap-3">
+                <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">
+                  {tuition.title}
+                </h1>
+                <BookmarkButton tuitionId={tuition._id} />
+              </div>
 
               <div className="mt-7 rounded-2xl border border-border bg-card p-5 shadow-sm sm:p-6">
                 <h2 className="text-lg font-semibold">About this tuition</h2>
@@ -167,6 +184,12 @@ export default async function TuitionDetailsPage({
                   </div>
                 </div>
               </div>
+
+              <ReviewSection
+                tuitionId={tuition._id}
+                initialAverageRating={tuition.averageRating ?? 0}
+                initialReviewCount={tuition.reviewCount ?? 0}
+              />
             </div>
 
             <aside className="space-y-6">

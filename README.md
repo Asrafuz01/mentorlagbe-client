@@ -37,7 +37,10 @@ Use placeholder values only. Never commit the demo password, `JWT_SECRET`, Strip
 - **Role-based authentication** with BetterAuth sessions (`student` / `tutor` / `admin`) plus JWT issuance and verification in the Express API.
 - **Public tuition catalog** with server-side search, subject/class-level/mode filtering, and pagination.
 - **ImgBB image upload** reused by profile editing and tutor tuition forms, with a manual URL fallback.
-- **Student dashboard:** overview, applications, application cancellation, and Pro upgrade entry points.
+- **Student dashboard:** overview, applications, saved tuitions (quick unsave + view details), application cancellation, and Pro upgrade entry points.
+- **Bookmarks:** students can save tuitions from cards and detail pages; Free accounts get 5 slots, Pro accounts are unlimited.
+- **Reviews & ratings:** accepted students submit a 1–5 star review with short feedback; average rating and review list are visible on tuition pages and cards.
+- **Visible theme switch:** accessible light/dark button in the navbar (desktop and mobile) alongside the existing `T` hotkey.
 - **Tutor dashboard:** overview, tuition CRUD, applicant review, and accept/reject actions.
 - **Admin dashboard:** overview stats, user role management, tuition approvals, and Stripe transactions.
 - **Stripe checkout** for `student-pro` and `tutor-pro` plans, with success/cancel pages and server-side verification.

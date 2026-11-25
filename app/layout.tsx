@@ -2,6 +2,7 @@ import { Geist, Geist_Mono } from "next/font/google"
 import { Toaster } from "sonner"
 
 import "./globals.css"
+import { BookmarkProvider } from "@/components/bookmarks"
 import { ThemeProvider } from "@/components/theme-provider"
 import { cn } from "@/lib/utils"
 
@@ -29,7 +30,9 @@ export default function RootLayout({
       )}
     >
       <body>
-        <ThemeProvider>{children}</ThemeProvider>
+        <ThemeProvider>
+          <BookmarkProvider>{children}</BookmarkProvider>
+        </ThemeProvider>
         <Toaster richColors position="top-right" />
       </body>
     </html>

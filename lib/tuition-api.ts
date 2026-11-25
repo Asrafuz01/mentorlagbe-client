@@ -40,6 +40,8 @@ export function normalizeTuition(value: unknown): Tuition | null {
     approvalStatus,
     isActive: raw.isActive === undefined ? true : Boolean(raw.isActive),
     createdAt: asString(raw.createdAt),
+    averageRating: Number(raw.averageRating) || 0,
+    reviewCount: Number(raw.reviewCount) || 0,
   }
 }
 
