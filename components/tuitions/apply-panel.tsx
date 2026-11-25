@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, type FormEvent } from "react"
+import { useEffect, useState, type FormEvent } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import {
@@ -14,14 +14,32 @@ import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { AUTH_PATHS } from "@/components/navbar/nav-config"
 import { useAuthIdentity } from "@/lib/auth-identity"
+import {
+  getCollection,
+  isOwnRecord,
+  normalizeApplication,
+} from "@/lib/dashboard-api"
 import { authenticatedFetch } from "@/lib/express-auth"
 import { TUITION_API_URL } from "@/lib/tuition-api"
 import { cn } from "@/lib/utils"
+import type { Application } from "@/types"
 
 const FIELD_CLASS =
   "h-10 w-full rounded-lg border border-input bg-background px-3 text-sm shadow-sm outline-none transition-colors placeholder:text-muted-foreground focus-visible:ring-3 focus-visible:ring-ring/30 disabled:cursor-not-allowed disabled:opacity-60"
 
 const READONLY_CLASS = cn(FIELD_CLASS, "bg-muted/60 text-muted-foreground")
+
+function ApplyPanelSkeleton() {
+  return (
+    <div className="rounded-2xl border border-border bg-card p-6 shadow-sm">
+      <div className="h-5 w-32 animate-pulse rounded bg-muted" />
+      <div className="mt-4 h-10 w-full animate-pulse rounded-lg bg-muted" />
+      <div className="mt-3 h-10 w-full animate-pulse rounded-lg bg-muted" />
+      <div className="mt-3 h-10 w-full animate-pulse rounded-lg bg-muted" />
+      <div className="mt-5 h-11 w-full animate-pulse rounded-lg bg-muted" />
+    </div>
+  )
+}
 
 export type ApplyPanelProps = {
   tuitionId: string
@@ -40,20 +58,45 @@ export function ApplyPanel({ tuitionId, tuitionTitle }: ApplyPanelProps) {
   }>({})
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitted, setSubmitted] = useState(false)
+  // null = still checking the student's existing applications
+  const [hasApplied, setHasApplied] = useState<boolean | null>(null)
 
   const role = user?.role ?? ""
   const isRestrictedRole = role === "tutor" || role === "admin"
+  const userEmail = user?.email ?? ""
+  const userId = user?.id ?? ""
+  const isStudent = role === "student"
+
+  // The applications list is scoped by the server to the signed-in student.
+  // Checking it on mount makes duplicate detection survive page reloads; the
+  // 409 response from POST remains the authoritative backstop.
+  useEffect(() => {
+    let active = true
+    setHasApplied(null)
+    if (isPending || !userEmail || !isStudent) return
+
+    void getCollection<Application>(
+      "/api/applications",
+      normalizeApplication
+    ).then((result) => {
+      if (!active) return
+      const alreadyApplied =
+        result.error === null &&
+        result.items.some(
+          (application) =>
+            application.tuitionId === tuitionId &&
+            isOwnRecord(application, { id: userId, email: userEmail }, "student")
+        )
+      setHasApplied(alreadyApplied)
+    })
+
+    return () => {
+      active = false
+    }
+  }, [tuitionId, userId, userEmail, isStudent, isPending])
 
   if (isPending) {
-    return (
-      <div className="rounded-2xl border border-border bg-card p-6 shadow-sm">
-        <div className="h-5 w-32 animate-pulse rounded bg-muted" />
-        <div className="mt-4 h-10 w-full animate-pulse rounded-lg bg-muted" />
-        <div className="mt-3 h-10 w-full animate-pulse rounded-lg bg-muted" />
-        <div className="mt-3 h-10 w-full animate-pulse rounded-lg bg-muted" />
-        <div className="mt-5 h-11 w-full animate-pulse rounded-lg bg-muted" />
-      </div>
-    )
+    return <ApplyPanelSkeleton />
   }
 
   if (!user) {
@@ -126,6 +169,35 @@ export function ApplyPanel({ tuitionId, tuitionTitle }: ApplyPanelProps) {
     )
   }
 
+  // Do not flash the form before the persistent duplicate check finishes.
+  if (isStudent && hasApplied === null) {
+    return <ApplyPanelSkeleton />
+  }
+
+  if (isStudent && hasApplied) {
+    return (
+      <div className="rounded-2xl border border-primary/30 bg-card p-6 text-center shadow-sm">
+        <CheckCircle2
+          className="mx-auto size-10 text-primary"
+          aria-hidden="true"
+        />
+        <h2 className="mt-4 text-lg font-semibold">Already Applied</h2>
+        <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+          You have already applied to{" "}
+          <span className="font-medium">{tuitionTitle}</span>. You can track
+          its status in{" "}
+          <Link
+            href="/dashboard/student/my-applications"
+            className="font-medium text-primary hover:underline"
+          >
+            My Applications
+          </Link>
+          .
+        </p>
+      </div>
+    )
+  }
+
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     if (isSubmitting || submitted) return
@@ -166,10 +238,14 @@ export function ApplyPanel({ tuitionId, tuitionTitle }: ApplyPanelProps) {
           result && typeof result === "object" && "message" in result
             ? String((result as { message: unknown }).message)
             : "Could not submit your application."
+        if (response.status === 409 && /already applied/i.test(message)) {
+          setHasApplied(true)
+        }
         throw new Error(message)
       }
 
       toast.success("Application submitted successfully!")
+      setHasApplied(true)
       setSubmitted(true)
     } catch (error) {
       toast.error(
