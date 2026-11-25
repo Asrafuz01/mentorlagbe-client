@@ -8,11 +8,10 @@ The companion API lives in the `mentorlagbe-server` repository.
 
 ## Live Site & Repositories
 
-Replace these placeholders with the real deployment and repository URLs before sharing publicly:
-
-- **Live site:** `https://<your-deployment-url>`
-- **Client repository:** `https://github.com/<your-org>/mentorlagbe-client`
-- **Server repository:** `https://github.com/<your-org>/mentorlagbe-server`
+- **Live site:** https://mentorlagbe-client-g8ov.vercel.app
+- **Live API:** https://mentorlagbe-server-blush.vercel.app
+- **Client repository:** https://github.com/Asrafuz01/mentorlagbe-client
+- **Server repository:** https://github.com/Asrafuz01/mentorlagbe-server
 
 ## Admin Credentials (Demo / Local Only)
 
@@ -73,7 +72,7 @@ NEXT_PUBLIC_API_URL=http://localhost:5000
 NEXT_PUBLIC_IMGBB_API_KEY=<local-imgbb-key>
 ```
 
-`NEXT_PUBLIC_API_URL` defaults to `http://localhost:5000` when omitted.
+`NEXT_PUBLIC_API_URL` is optional: local development defaults to `http://localhost:5000`, while production builds default to `https://mentorlagbe-server-blush.vercel.app`.
 
 ## Getting Started
 
