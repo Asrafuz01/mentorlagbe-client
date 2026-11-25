@@ -20,6 +20,7 @@ import {
 import { toast } from "sonner"
 
 import {
+  DashboardPageHeader,
   DashboardSkeleton,
   useDashboardIdentity,
   type DashboardUser,
@@ -248,18 +249,14 @@ function ProfileFields({ user, refreshIdentity }: ProfileFieldsProps) {
 
   return (
     <div className="space-y-6">
-      <header>
-        <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
-          Update Profile
-        </h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Keep your contact details and public profile up to date.
-        </p>
-      </header>
+      <DashboardPageHeader
+        title="Update Profile"
+        description="Keep your contact details and public profile up to date."
+      />
 
       <form
         onSubmit={handleSubmit}
-        className="grid gap-6 lg:grid-cols-[20rem_minmax(0,1fr)]"
+        className="grid gap-6 xl:grid-cols-[20rem_minmax(0,1fr)]"
       >
         <section className="h-fit rounded-2xl border border-border bg-card p-5 shadow-sm sm:p-6">
           <h2 className="text-base font-semibold">Profile Photo</h2>

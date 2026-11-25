@@ -39,6 +39,7 @@ const EMPTY_SNAPSHOT: ProfileSnapshot = {
 // profile. A tiny external store shares the result and its in-flight request.
 const profileSnapshots = new Map<string, ProfileSnapshot>()
 const profileRequests = new Map<string, Promise<void>>()
+const profileRequestIds = new Map<string, number>()
 const listeners = new Set<() => void>()
 
 function emitChange() {
@@ -69,19 +70,23 @@ function setProfileSnapshot(
   emitChange()
 }
 
-/** Drops cached profiles so the next render/refetch sees fresh server data. */
+/** Drops cached profiles and prevents in-flight requests from writing stale data. */
 export function clearAuthIdentityCache(email?: string) {
   if (email) {
     profileSnapshots.delete(email)
+    profileRequests.delete(email)
+    profileRequestIds.delete(email)
   } else {
     profileSnapshots.clear()
+    profileRequests.clear()
+    profileRequestIds.clear()
   }
   emitChange()
 }
 
 async function fetchAuthProfile(email: string, force = false) {
   const inFlight = profileRequests.get(email)
-  if (inFlight) return inFlight
+  if (inFlight && !force) return inFlight
 
   const existing = profileSnapshots.get(email)
   if (
@@ -92,6 +97,10 @@ async function fetchAuthProfile(email: string, force = false) {
     return
   }
 
+  const requestId = (profileRequestIds.get(email) ?? 0) + 1
+  profileRequestIds.set(email, requestId)
+  const isCurrent = () => profileRequestIds.get(email) === requestId
+
   const request = (async () => {
     try {
       const response = await authenticatedFetch(
@@ -100,13 +109,15 @@ async function fetchAuthProfile(email: string, force = false) {
       )
       const data: unknown = await response.json().catch(() => null)
       if (response.ok && data && typeof data === "object") {
-        setProfileSnapshot(email, data as Record<string, unknown>)
+        if (isCurrent()) {
+          setProfileSnapshot(email, data as Record<string, unknown>)
+        }
         return
       }
     } catch {
       // Fall back to the BetterAuth session, but allow a retry after the TTL.
     }
-    setProfileSnapshot(email, null)
+    if (isCurrent()) setProfileSnapshot(email, null)
   })()
 
   profileRequests.set(email, request)
@@ -114,6 +125,9 @@ async function fetchAuthProfile(email: string, force = false) {
     await request
   } finally {
     if (profileRequests.get(email) === request) profileRequests.delete(email)
+    if (profileRequestIds.get(email) === requestId) {
+      profileRequestIds.delete(email)
+    }
   }
 }
 

@@ -221,7 +221,7 @@ function PostTuitionForm({
         <div className="flex flex-col gap-3 rounded-2xl border border-amber-500/30 bg-amber-500/5 p-5 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-start gap-3">
             <TriangleExclamationPoint
-              className="mt-0.5 size-5 shrink-0 text-amber-600"
+              className="mt-0.5 size-5 shrink-0 text-amber-700 dark:text-amber-400"
               aria-hidden="true"
             />
             <div>
@@ -246,7 +246,7 @@ function PostTuitionForm({
 
       <form
         onSubmit={handleSubmit}
-        className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_20rem]"
+        className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_20rem]"
       >
         <section className="rounded-2xl border border-border bg-card p-5 shadow-sm sm:p-6">
           <h2 className="text-base font-semibold">Tuition details</h2>

@@ -4,7 +4,7 @@ import { useEffect, useState } from "react"
 import { CircleCheck, Info, LoaderCircle, ShieldCheck } from "lucide-react"
 
 import { API_BASE_URL } from "@/lib/api"
-import { clearAuthIdentityCache } from "@/lib/auth-identity"
+import { useAuthIdentity } from "@/lib/auth-identity"
 import { authenticatedFetch } from "@/lib/express-auth"
 import { cn } from "@/lib/utils"
 
@@ -44,6 +44,7 @@ export function PaymentVerificationStatus({
   const [state, setState] = useState<VerificationState>(
     sessionId ? "checking" : "needs-attention"
   )
+  const { refresh: refreshAuthIdentity } = useAuthIdentity()
 
   useEffect(() => {
     if (!sessionId) return
@@ -61,8 +62,9 @@ export function PaymentVerificationStatus({
         if (!active) return
 
         if (response.ok) {
-          // The server just activated the purchased plan.
-          clearAuthIdentityCache()
+          // The server just activated the purchased plan; refresh the shared
+          // profile so navbar and dashboards see Pro without a manual reload.
+          refreshAuthIdentity()
           setState("confirmed")
         } else {
           setState("needs-attention")
@@ -77,7 +79,7 @@ export function PaymentVerificationStatus({
       active = false
       controller.abort()
     }
-  }, [sessionId])
+  }, [sessionId, refreshAuthIdentity])
 
   const copy = COPY[state]
   const isConfirmed = state === "confirmed"
