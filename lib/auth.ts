@@ -2,7 +2,23 @@ import { betterAuth } from "better-auth"
 import { mongodbAdapter } from "@better-auth/mongo-adapter"
 import { MongoClient } from "mongodb"
 
-const client = new MongoClient(process.env.MONGODB_URI!)
+const uri = process.env.MONGODB_URI!
+
+declare global {
+  var __mentorlagbeMongoClient: MongoClient | undefined
+}
+
+const client =
+  globalThis.__mentorlagbeMongoClient ??
+  new MongoClient(uri, {
+    maxPoolSize: 10,
+    serverSelectionTimeoutMS: 10000,
+  })
+
+if (!globalThis.__mentorlagbeMongoClient) {
+  globalThis.__mentorlagbeMongoClient = client
+}
+
 const db = client.db(process.env.DB_NAME || "mentorlagbedb")
 
 const googleClientId = process.env.GOOGLE_CLIENT_ID?.trim()
